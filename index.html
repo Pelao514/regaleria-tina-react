@@ -1,0 +1,2731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regalería Tina - Gestor de Ventas & Cuentas Corrientes</title>
+  <link rel="icon" type="image/jpg" href="./public/logo.jpg">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Estilos CSS del Sistema -->
+  <link rel="stylesheet" href="./src/index.css">
+
+  <!-- React 18 & Babel Standalone (Para ejecución directa en navegador) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Aplicación Standalone Completa Directa -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, createContext, useContext, Component } = React;
+
+    // --- ICONOS LUCIDE SVG NATIVOS ---
+    const createIcon = (paths) => ({ size = 20, color = 'currentColor', style = {}, className = '' }) => (
+      <svg 
+        width={size} 
+        height={size} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke={color} 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}
+        className={className}
+        dangerouslySetInnerHTML={{ __html: paths }}
+      />
+    );
+
+    const ShoppingBag = createIcon('<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>');
+    const Package = createIcon('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>');
+    const Wallet = createIcon('<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>');
+    const Clock = createIcon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>');
+    const LogOut = createIcon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>');
+    const Sun = createIcon('<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>');
+    const Moon = createIcon('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>');
+    const ShieldCheck = createIcon('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>');
+    const Search = createIcon('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>');
+    const Plus = createIcon('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>');
+    const Minus = createIcon('<line x1="5" y1="12" x2="19" y2="12"/>');
+    const Trash2 = createIcon('<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>');
+    const DollarSign = createIcon('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>');
+    const CreditCard = createIcon('<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>');
+    const Smartphone = createIcon('<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>');
+    const FileText = createIcon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>');
+    const UserPlus = createIcon('<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>');
+    const CheckCircle = createIcon('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>');
+    const AlertTriangle = createIcon('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>');
+    const Edit2 = createIcon('<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>');
+    const Edit3 = createIcon('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>');
+    const Eye = createIcon('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>');
+    const Users = createIcon('<path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M9 21v-2a4 4 0 0 1 3-3.87"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><circle cx="16" cy="3.13" r="3"/>');
+    const Lock = createIcon('<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>');
+    const Unlock = createIcon('<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>');
+    const Receipt = createIcon('<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/>');
+    const History = createIcon('<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><polyline points="12 7 12 12 15 15"/>');
+    const TrendingUp = createIcon('<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>');
+    const Flame = createIcon('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>');
+    const Award = createIcon('<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>');
+    const LogIn = createIcon('<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>');
+    const KeyRound = createIcon('<path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>');
+    const ArrowLeft = createIcon('<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>');
+    const Key = createIcon('<path d="M21 2l-2 2m-2-2l2 2m7 0a9 9 0 11-18 0 9 9 0 0118 0z"/>');
+    const PlusCircle = createIcon('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>');
+    const Printer = createIcon('<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>');
+    const Filter = createIcon('<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>');
+    const Save = createIcon('<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>');
+
+    // --- CONTEXTO AUTENTICACIÓN ---
+    const AuthContext = createContext();
+    const LOCAL_USERS_KEY = 'tina_users_data';
+    const CURRENT_USER_KEY = 'tina_current_user';
+    const INITIAL_USERS = [
+      { id: 'usr-admin-1', email: 'admin@regaleriatina.com', password: 'admin123', full_name: 'Administrador Principal', role: 'admin' },
+      { id: 'usr-cajero-1', email: 'cajero@regaleriatina.com', password: 'cajero123', full_name: 'Cajero de Turno', role: 'cajero' }
+    ];
+
+    function AuthProvider({ children }) {
+      const [user, setUser] = useState(null);
+      const [usersList, setUsersList] = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        try {
+          const stored = localStorage.getItem(LOCAL_USERS_KEY);
+          const users = stored ? JSON.parse(stored) : INITIAL_USERS;
+          setUsersList(users);
+          const saved = localStorage.getItem(CURRENT_USER_KEY);
+          setUser(saved ? JSON.parse(saved) : null);
+        } catch {
+          setUsersList(INITIAL_USERS);
+          setUser(null);
+        }
+        setLoading(false);
+      }, []);
+
+      const login = (email, password) => {
+        const found = usersList.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (!found) throw new Error('El correo electrónico no se encuentra registrado.');
+        if (found.password && password && found.password !== password) throw new Error('La contraseña ingresada es incorrecta.');
+        setUser(found);
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+        return found;
+      };
+
+      const register = (email, password, fullName) => {
+        const existing = usersList.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (existing) throw new Error('El correo electrónico ya está registrado.');
+        const newUser = { id: 'usr-' + Date.now(), email: email.trim(), password: password.trim(), full_name: fullName.trim(), role: 'cajero' };
+        const updated = [...usersList, newUser];
+        setUsersList(updated);
+        localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(updated));
+        setUser(newUser);
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
+        return newUser;
+      };
+
+      const resetPassword = (email, newPassword) => {
+        const found = usersList.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (!found) throw new Error('No se encontró ningún usuario con ese correo electrónico.');
+        const updated = usersList.map(u => u.id === found.id ? { ...u, password: newPassword.trim() } : u);
+        setUsersList(updated);
+        localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(updated));
+        return true;
+      };
+
+      const logout = () => { setUser(null); localStorage.removeItem(CURRENT_USER_KEY); };
+      const updateUserRole = (userId, newRole) => {
+        const updated = usersList.map(u => u.id === userId ? { ...u, role: newRole } : u);
+        setUsersList(updated); localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(updated));
+        if (user?.id === userId) { const uUser = { ...user, role: newRole }; setUser(uUser); localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(uUser)); }
+      };
+      const updateUser = (userId, data) => {
+        const updated = usersList.map(u => u.id === userId ? { ...u, full_name: data.full_name, email: data.email, password: data.password || u.password, role: data.role } : u);
+        setUsersList(updated); localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(updated));
+        if (user?.id === userId) { const uSelf = updated.find(u => u.id === userId); setUser(uSelf); localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(uSelf)); }
+      };
+      const createNewUser = (email, password, fullName, role) => {
+        const newUser = { id: 'usr-' + Date.now(), email: email.trim(), password: password || '123456', full_name: fullName.trim(), role: role || 'cajero' };
+        const updated = [...usersList, newUser]; setUsersList(updated); localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(updated)); return newUser;
+      };
+      const deleteUser = (userId) => {
+        if (user?.id === userId) throw new Error('No puedes eliminar tu propio usuario activo.');
+        const updated = usersList.filter(u => u.id !== userId); setUsersList(updated); localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(updated));
+      };
+
+      return (
+        <AuthContext.Provider value={{ user, usersList, loading, login, register, resetPassword, logout, updateUserRole, updateUser, createNewUser, deleteUser, isAdmin: user?.role === 'admin' }}>
+          {children}
+        </AuthContext.Provider>
+      );
+    }
+    const useAuth = () => useContext(AuthContext);
+
+    // --- CONTEXTO DATOS ---
+    const BRANDS = [
+      'Amayra', 'Trendy', 'Las Oreiro / Oreiro', 'Skora', 'Influencer', 'Unicross',
+      'Alpine', 'Everlast', 'Wanderlust', 'Ona Saenz', 'Tropea', 'Chenson', 'Wilson',
+      'Carey', 'Mate Pampa', 'Línea Infantil', 'PVC Line', 'Línea Económica', 'Stanley', 'Montagne', 'Lumilagro', 'Cocot', 'Dulce Carola',
+      'Maybelline', 'Nivea', 'Tejar', 'Pink 365', 'Bijou Gold', 'Bijou Silver', 'Acero Blanco', 'Plata 925', 'Sin Marca'
+    ];
+
+    const CATEGORIES = [
+      'Marroquinería - Billeteras Mujer',
+      'Marroquinería - Billeteras Hombre',
+      'Marroquinería - Riñoneras (Grandes y Chicas)',
+      'Marroquinería - Carteras y Bolsos',
+      'Marroquinería - Bandoleras',
+      'Marroquinería - Mochilas Urbanas',
+      'Marroquinería - Mochilas Infantiles',
+      'Marroquinería - Luncheras',
+      'Marroquinería - Bolsos Materos',
+      'Marroquinería - Bolsos de Viaje',
+      'Marroquinería - Cartucheras',
+      'Marroquinería - Cintos Hombre',
+      'Marroquinería - Cintos Mujer',
+      'Marroquinería - Sets de Viaje',
+      'Bijouterie - Cadenas (40, 45, 50, 55, 60, 70 cm)',
+      'Bijouterie - Chokers y Gargantillas',
+      'Bijouterie - Rosarios y Denarios',
+      'Bijouterie - Pulseras y Brazaletes',
+      'Bijouterie - Aros Acero Quirúrgico (Plateados y Dorados)',
+      'Bijouterie - Aros Fantasía y Bronce',
+      'Bijouterie - Dijes y Medallas',
+      'Bijouterie - Anillos (Regulables y Talles)',
+      'Bijouterie - Conjuntos (Cadena + Dije + Aros)',
+      'Accesorios Pelo - Coleros, Gomitas y Scrunchies (Bebé a Grande)',
+      'Accesorios Pelo - Trabas e Invisibles (Infantiles y Adulto)',
+      'Accesorios Pelo - Broches Marca Carey (Banana, Francesa, etc.)',
+      'Accesorios Pelo - Broches Económicos, Fantasía, Acero y Strass',
+      'Accesorios Pelo - Vinchas y Donas para Rodetes',
+      'Accesorios Pelo - Peines y Cepillos',
+      'Cosméticos - Rostro (Bases, Polvos, Correctores, Contornos, Rubor e Iluminadores)',
+      'Cosméticos - Ojos y Cejas (Máscaras, Delineadores, Sombras, Arqueadores y Pegamento Pestañas)',
+      'Cosméticos - Labios (Labiales, Gloss Color/Transparente y Delineadores)',
+      'Cosméticos - Maquillaje Infantil y Pinturas',
+      'Cosméticos - Brochas, Sets, Esponjas y Pinzas de Cejas',
+      'Cosméticos - Manicuría (Esmaltes, Quitaesmalte, Limas, Uñas y Pegamentos)',
+      'Cosméticos & Skincare - Mascarillas, Rodillos Faciales, Extractor Puntos Negros y Spa',
+      'Infantil - Artículos de PVC y Silicona (Vasos, Cartucheras y Accesorios)',
+      'Infantil - Juguetería y Regalos Niños (Juegos, Muñecos y Novedades)',
+      'Infantil - Marroquinería de PVC y Mochilitas Infantiles',
+      'Infantil - Accesorios de Verano y Playa en PVC',
+      'Infantil - Bijou y Accesorios de Pelo Infantiles',
+      'Infantil - Cantimploras Térmicas, Vasos Térmicos y de Plástico / Aluminio',
+      'Infantil - Luncheras Térmicas y PVC (con Vaso o Compartimientos)',
+      'Tazas y Vajilla - Tazas de Porcelana (Adulto y Niños), con Platito y Plásticas',
+      'Tecnología & Regalería - Parlantes Bluetooth (Niños y Surtidos) y Lámparas Velador',
+      'Regalería - Espejos con Base, Manuales y con Luz LED',
+      'Regalería - Sets y Kits para Asado (Estuches y Cubiertos)',
+      'Bazar - Termos de Acero y Aluminio (Distintos Tamaños)',
+      'Bazar - Autocebantes de Acero y Kits Materos (Termo + Mate + Yerbero + Azucarera)',
+      'Bazar - Botellas y Vasos Térmicos de Acero (Shakers, Mugs y Chopps Cerveceros)',
+      'Bazar - Mates (Mate Pampa, Madera, Aluminio y Acero Inoxidable)',
+      'Bazar - Bombillas, Yerberos y Azucareras',
+      'Bazar - Jarras Térmicas y Chopps Cerveceros',
+      'Regalería & Varios - Breteles, Abanicos, Petacas y Guantes Exfoliantes',
+      'Regalería - Espejitos, Frasquitos de Viaje y Antifaces',
+      'Regalería - Blísters de Strass y Apliques',
+      'Ropa Interior y Lencería'
+    ];
+    const EXPENSE_CATEGORIES = ['⚡ Energía Eléctrica (Luz)', '🚰 Agua Potable y Servicios', '🌐 Internet y Teléfono', '🧹 Limpieza e Insumos', '🏠 Alquiler del Local', '📦 Impuestos y Tasas', '🛍️ Mantenimiento / Otros'];
+
+    function getCategoryPrefix(category = '', productName = '') {
+      let mainInitial = 'X';
+      let subInitial = 'X';
+      const fullText = (category + ' ' + productName).toLowerCase();
+      const catLower = (category || '').toLowerCase();
+
+      if (catLower.includes('marroquin')) mainInitial = 'M';
+      else if (catLower.includes('bijou')) mainInitial = 'B';
+      else if (catLower.includes('accesorios') || catLower.includes('pelo')) mainInitial = 'A';
+      else if (catLower.includes('cosmétic') || catLower.includes('cosmet') || catLower.includes('skincare')) mainInitial = 'C';
+      else if (catLower.includes('infantil') || catLower.includes('juguet')) mainInitial = 'I';
+      else if (catLower.includes('bazar')) mainInitial = 'Z';
+      else if (catLower.includes('tazas') || catLower.includes('vajilla')) mainInitial = 'V';
+      else if (catLower.includes('tecnolog')) mainInitial = 'T';
+      else if (catLower.includes('regaler')) mainInitial = 'R';
+      else if (catLower.includes('lencer') || catLower.includes('ropa')) mainInitial = 'L';
+      else {
+        const cleanCat = category.replace(/[^a-zA-Z]/g, '');
+        mainInitial = cleanCat.charAt(0).toUpperCase() || 'P';
+      }
+
+      if (fullText.includes('bandolera')) subInitial = 'B';
+      else if (fullText.includes('riñonera')) subInitial = 'R';
+      else if (fullText.includes('cartera')) subInitial = 'C';
+      else if (fullText.includes('mochila')) subInitial = 'M';
+      else if (fullText.includes('billetera')) subInitial = 'W';
+      else if (fullText.includes('bolso')) subInitial = 'O';
+      else if (fullText.includes('lunchera')) subInitial = 'L';
+      else if (fullText.includes('cartuchera')) subInitial = 'T';
+      else if (fullText.includes('cinto')) subInitial = 'K';
+      else if (fullText.includes('cadena')) subInitial = 'C';
+      else if (fullText.includes('rosario') || fullText.includes('denario')) subInitial = 'R';
+      else if (fullText.includes('pulsera') || fullText.includes('brazalete')) subInitial = 'P';
+      else if (fullText.includes('aro')) subInitial = 'A';
+      else if (fullText.includes('dije') || fullText.includes('medalla')) subInitial = 'D';
+      else if (fullText.includes('choker') || fullText.includes('gargantilla')) subInitial = 'K';
+      else if (fullText.includes('anillo')) subInitial = 'N';
+      else if (fullText.includes('conjunto')) subInitial = 'J';
+      else if (fullText.includes('broche')) subInitial = 'B';
+      else if (fullText.includes('colero') || fullText.includes('gomita') || fullText.includes('scrunchie')) subInitial = 'C';
+      else if (fullText.includes('vincha') || fullText.includes('dona')) subInitial = 'V';
+      else if (fullText.includes('peine') || fullText.includes('cepillo')) subInitial = 'P';
+      else if (fullText.includes('rostro')) subInitial = 'R';
+      else if (fullText.includes('ojo') || fullText.includes('ceja')) subInitial = 'O';
+      else if (fullText.includes('labio')) subInitial = 'L';
+      else if (fullText.includes('maquillaje')) subInitial = 'M';
+      else if (fullText.includes('manicur') || fullText.includes('esmalte')) subInitial = 'N';
+      else if (fullText.includes('termo')) subInitial = 'T';
+      else if (fullText.includes('mate')) subInitial = 'M';
+      else if (fullText.includes('botella') || fullText.includes('vaso')) subInitial = 'B';
+      else if (fullText.includes('bombilla') || fullText.includes('yerbero')) subInitial = 'Y';
+      else if (fullText.includes('jarra') || fullText.includes('chopp')) subInitial = 'J';
+      else if (fullText.includes('espejo')) subInitial = 'E';
+      else if (fullText.includes('asado')) subInitial = 'A';
+      else {
+        let subPart = category.includes('-') ? category.split('-')[1].trim() : productName || category;
+        const cleanSub = subPart.replace(/[^a-zA-Z]/g, '');
+        subInitial = cleanSub.charAt(0).toUpperCase() || 'G';
+      }
+
+      return `${mainInitial}${subInitial}`;
+    }
+
+    function generateAutoCode(category = '', products = [], productName = '', subcode = '01', excludeId = null) {
+      const prefix = getCategoryPrefix(category, productName);
+      const cleanSubcode = String(subcode || '01').trim().toUpperCase().padStart(2, '0');
+      const regexWithSub = new RegExp(`^${prefix}-${cleanSubcode}-(\\d+)$`, 'i');
+      const regexGeneric = new RegExp(`^${prefix}-(\\d+)$`, 'i');
+
+      let maxNum = 0;
+      (products || []).forEach(p => {
+        if (p.barcode && p.id !== excludeId) {
+          const codeStr = String(p.barcode).trim();
+          let match = codeStr.match(regexWithSub);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (!isNaN(num) && num > maxNum) maxNum = num;
+          } else {
+            match = codeStr.match(regexGeneric);
+            if (match) {
+              const num = parseInt(match[1], 10);
+              if (!isNaN(num) && num > maxNum) maxNum = num;
+            }
+          }
+        }
+      });
+
+      let nextSeq = maxNum + 1;
+      let candidate = `${prefix}-${cleanSubcode}-${String(nextSeq).padStart(4, '0')}`;
+
+      const existingCodes = new Set(
+        (products || [])
+          .filter(p => p.id !== excludeId && p.barcode)
+          .map(p => String(p.barcode).trim().toUpperCase())
+      );
+
+      while (existingCodes.has(candidate.toUpperCase())) {
+        nextSeq++;
+        candidate = `${prefix}-${cleanSubcode}-${String(nextSeq).padStart(4, '0')}`;
+      }
+
+      return candidate;
+    }
+
+    const INITIAL_PRODUCTS = [
+      { id: 'prod-101', name: 'Cadena Acero Quirúrgico 45 cm', brand: 'Bijou Silver', category: 'Bijouterie - Cadenas (40, 45, 50, 55, 60, 70 cm)', barcode: 'BC-01-0001', costPrice: 1500, sellPrice: 3800, stock: 15, minStock: 4 },
+      { id: 'prod-102', name: 'Rosario Acero Quirúrgico con Cruz', brand: 'Bijou Silver', category: 'Bijouterie - Rosarios y Denarios', barcode: 'BR-01-0001', costPrice: 2200, sellPrice: 5500, stock: 10, minStock: 3 },
+      { id: 'prod-103', name: 'Choker Gargantilla Rígida Dorada', brand: 'Bijou Gold', category: 'Bijouterie - Chokers y Gargantillas', barcode: 'BK-01-0001', costPrice: 1800, sellPrice: 4500, stock: 8, minStock: 2 },
+      { id: 'prod-104', name: 'Brazalete Ancho Acero Dorado', brand: 'Bijou Gold', category: 'Bijouterie - Pulseras y Brazaletes', barcode: 'BP-01-0001', costPrice: 2500, sellPrice: 6200, stock: 6, minStock: 2 },
+      { id: 'prod-105', name: 'Denario Acero San Benito', brand: 'Acero Blanco', category: 'Bijouterie - Rosarios y Denarios', barcode: 'BR-01-0002', costPrice: 1200, sellPrice: 2900, stock: 12, minStock: 3 },
+      { id: 'prod-201', name: 'Cartera Eco-Cuero Doble Manija', brand: 'Amayra', category: 'Marroquinería - Carteras y Bolsos', barcode: 'MC-01-0001', costPrice: 9500, sellPrice: 21900, stock: 4, minStock: 2 },
+      { id: 'prod-202', name: 'Billetera Doble Cierre Corta', brand: 'Las Oreiro / Oreiro', category: 'Marroquinería - Billeteras Mujer', barcode: 'MW-01-0001', costPrice: 3500, sellPrice: 8200, stock: 12, minStock: 3 },
+      { id: 'prod-203', name: 'Billetera Cuero Ecológico Clásica', brand: 'Everlast', category: 'Marroquinería - Billeteras Hombre', barcode: 'MW-01-0002', costPrice: 2900, sellPrice: 6800, stock: 15, minStock: 4 },
+      { id: 'prod-204', name: 'Riñonera Deportiva Grande Impermeable', brand: 'Wilson', category: 'Marroquinería - Riñoneras (Grandes y Chicas)', barcode: 'MR-01-0001', costPrice: 4200, sellPrice: 9800, stock: 7, minStock: 2 },
+      { id: 'prod-205', name: 'Mochila Urbana Porta Notebook', brand: 'Wanderlust', category: 'Marroquinería - Mochilas Urbanas', barcode: 'MM-01-0001', costPrice: 11500, sellPrice: 25900, stock: 5, minStock: 2 },
+      { id: 'prod-206', name: 'Mochila Infantil Personajes Lentejuelas', brand: 'Skora', category: 'Marroquinería - Mochilas Infantiles', barcode: 'MM-01-0002', costPrice: 8200, sellPrice: 18500, stock: 6, minStock: 2 },
+      { id: 'prod-207', name: 'Lunchera Térmica Escolar', brand: 'Trendy', category: 'Marroquinería - Luncheras', barcode: 'ML-01-0001', costPrice: 3800, sellPrice: 8900, stock: 9, minStock: 3 },
+      { id: 'prod-208', name: 'Bolso Matero Reforzado Equipado', brand: 'Unicross', category: 'Marroquinería - Bolsos Materos', barcode: 'MO-01-0001', costPrice: 8900, sellPrice: 19500, stock: 3, minStock: 2 },
+      { id: 'prod-209', name: 'Bolso de Viaje Mediano con Cierres', brand: 'Alpine', category: 'Marroquinería - Bolsos de Viaje', barcode: 'MO-01-0002', costPrice: 12800, sellPrice: 28900, stock: 4, minStock: 2 },
+      { id: 'prod-210', name: 'Cartuchera 2 Compartimientos', brand: 'Influencer', category: 'Marroquinería - Cartucheras', barcode: 'MT-01-0001', costPrice: 1800, sellPrice: 4200, stock: 14, minStock: 4 },
+      { id: 'prod-211', name: 'Cinto Hombre Cuero Sintético Cosido', brand: 'Ona Saenz', category: 'Marroquinería - Cintos Hombre', barcode: 'MK-01-0001', costPrice: 2100, sellPrice: 4900, stock: 10, minStock: 3 },
+      { id: 'prod-212', name: 'Billetera Cierre Perimetral Económica', brand: 'Línea Económica', category: 'Marroquinería - Billeteras Mujer', barcode: 'MW-01-0003', costPrice: 1400, sellPrice: 3200, stock: 20, minStock: 5 },
+      { id: 'prod-401', name: 'Broche Carey Modelo Francesa Grande', brand: 'Carey', category: 'Accesorios Pelo - Broches Marca Carey (Banana, Francesa, etc.)', barcode: 'AB-01-0001', costPrice: 1200, sellPrice: 2800, stock: 12, minStock: 3 },
+      { id: 'prod-402', name: 'Pack x10 Coleros Comunes Surtidos', brand: 'Línea Económica', category: 'Accesorios Pelo - Coleros, Gomitas y Scrunchies (Bebé a Grande)', barcode: 'AC-01-0001', costPrice: 600, sellPrice: 1500, stock: 25, minStock: 5 },
+      { id: 'prod-403', name: 'Scrunchie de Satin con Moño Elegante', brand: 'Sin Marca', category: 'Accesorios Pelo - Coleros, Gomitas y Scrunchies (Bebé a Grande)', barcode: 'AC-01-0002', costPrice: 850, sellPrice: 2200, stock: 18, minStock: 4 },
+      { id: 'prod-404', name: 'Broche Banana Acero y Strass Brillante', brand: 'Carey', category: 'Accesorios Pelo - Broches Económicos, Fantasía, Acero y Strass', barcode: 'AB-01-0002', costPrice: 1900, sellPrice: 4800, stock: 8, minStock: 2 },
+      { id: 'prod-405', name: 'Dona para Rodete Cabello Mediana', brand: 'Sin Marca', category: 'Accesorios Pelo - Vinchas y Donas para Rodetes', barcode: 'AV-01-0001', costPrice: 500, sellPrice: 1300, stock: 14, minStock: 3 },
+      { id: 'prod-406', name: 'Blíster de Strass Facial y Cabello Surtido', brand: 'Sin Marca', category: 'Regalería - Blísters de Strass y Apliques', barcode: 'RB-01-0001', costPrice: 700, sellPrice: 1800, stock: 20, minStock: 5 },
+      { id: 'prod-501', name: 'Máscara de Pestañas Volumen Intenso', brand: 'Maybelline', category: 'Cosméticos - Ojos y Cejas (Máscaras, Delineadores, Sombras, Arqueadores y Pegamento Pestañas)', barcode: 'CO-01-0001', costPrice: 3200, sellPrice: 7500, stock: 10, minStock: 3 },
+      { id: 'prod-502', name: 'Arqueador de Pestañas Ergonómico con Repuesto', brand: 'Tejar', category: 'Cosméticos - Ojos y Cejas (Máscaras, Delineadores, Sombras, Arqueadores y Pegamento Pestañas)', barcode: 'CO-01-0002', costPrice: 1100, sellPrice: 2800, stock: 15, minStock: 4 },
+      { id: 'prod-503', name: 'Labial Humectante Matte Larga Duración', brand: 'Maybelline', category: 'Cosméticos - Labios (Labiales, Gloss Color/Transparente y Delineadores)', barcode: 'CL-01-0001', costPrice: 2400, sellPrice: 5800, stock: 12, minStock: 3 },
+      { id: 'prod-504', name: 'Gloss Labial Transparente Extra Brillo', brand: 'Pink 365', category: 'Cosméticos - Labios (Labiales, Gloss Color/Transparente y Delineadores)', barcode: 'CL-01-0002', costPrice: 1300, sellPrice: 3200, stock: 16, minStock: 4 },
+      { id: 'prod-505', name: 'Set x8 Brochas de Maquillaje Profesional', brand: 'Tejar', category: 'Cosméticos - Brochas, Sets, Esponjas y Pinzas de Cejas', barcode: 'CM-01-0001', costPrice: 3500, sellPrice: 8500, stock: 7, minStock: 2 },
+      { id: 'prod-506', name: 'Rodillo Facial Piedra Jade + Piedra Gua Sha', brand: 'Pink 365', category: 'Cosméticos & Skincare - Mascarillas, Rodillos Faciales, Extractor Puntos Negros y Spa', barcode: 'CR-01-0001', costPrice: 2800, sellPrice: 6900, stock: 6, minStock: 2 },
+      { id: 'prod-507', name: 'Esmalte para Uñas Secado Rápido', brand: 'Tejar', category: 'Cosméticos - Manicuría (Esmaltes, Quitaesmalte, Limas, Uñas y Pegamentos)', barcode: 'CN-01-0001', costPrice: 750, sellPrice: 1900, stock: 25, minStock: 5 },
+      { id: 'prod-508', name: 'Set Extractor Puntos Negros en Acero (4 piezas)', brand: 'Sin Marca', category: 'Cosméticos & Skincare - Mascarillas, Rodillos Faciales, Extractor Puntos Negros y Spa', barcode: 'CR-01-0002', costPrice: 1500, sellPrice: 3800, stock: 10, minStock: 3 },
+      { id: 'prod-601', name: 'Termo Acero Inoxidable 1 Litro con Manija', brand: 'Stanley', category: 'Bazar - Termos de Acero y Aluminio (Distintos Tamaños)', barcode: 'ZT-01-0001', costPrice: 11500, sellPrice: 25900, stock: 6, minStock: 2 },
+      { id: 'prod-602', name: 'Mate Pampa Térmico Edición Especial', brand: 'Mate Pampa', category: 'Bazar - Mates (Mate Pampa, Madera, Aluminio y Acero Inoxidable)', barcode: 'ZM-01-0001', costPrice: 3800, sellPrice: 8900, stock: 12, minStock: 3 },
+      { id: 'prod-603', name: 'Autocebante de Acero Inoxidable 750ml', brand: 'Sin Marca', category: 'Bazar - Autocebantes de Acero y Kits Materos (Termo + Mate + Yerbero + Azucarera)', barcode: 'ZM-01-0002', costPrice: 5200, sellPrice: 11900, stock: 8, minStock: 2 },
+      { id: 'prod-604', name: 'Kit Matero Completo (Termo 1L + Mate + Yerbero + Azucarera)', brand: 'Línea Económica', category: 'Bazar - Autocebantes de Acero y Kits Materos (Termo + Mate + Yerbero + Azucarera)', barcode: 'ZM-01-0003', costPrice: 8900, sellPrice: 19800, stock: 5, minStock: 2 },
+      { id: 'prod-605', name: 'Vaso Térmico Chopp Cervecero con Destapador 473ml', brand: 'Stanley', category: 'Bazar - Botellas y Vasos Térmicos de Acero (Shakers, Mugs y Chopps Cerveceros)', barcode: 'ZB-01-0001', costPrice: 4500, sellPrice: 10500, stock: 10, minStock: 3 },
+      { id: 'prod-606', name: 'Bombilla de Alpaca Cincelada Reforzada', brand: 'Sin Marca', category: 'Bazar - Bombillas, Yerberos y Azucareras', barcode: 'ZY-01-0001', costPrice: 1800, sellPrice: 4200, stock: 15, minStock: 4 },
+      { id: 'prod-701', name: 'Vaso Infantil de PVC con Sorbete y Personajes 450ml', brand: 'Línea Infantil', category: 'Infantil - Artículos de PVC y Silicona (Vasos, Cartucheras y Accesorios)', barcode: 'IB-01-0001', costPrice: 1200, sellPrice: 2900, stock: 15, minStock: 4 },
+      { id: 'prod-702', name: 'Cartuchera Transparente de PVC con Cierre Multicolor', brand: 'PVC Line', category: 'Infantil - Artículos de PVC y Silicona (Vasos, Cartucheras y Accesorios)', barcode: 'IT-01-0001', costPrice: 1500, sellPrice: 3500, stock: 12, minStock: 3 },
+      { id: 'prod-703', name: 'Mochila Infantil Transparente de PVC con Lentejuelas', brand: 'Skora', category: 'Infantil - Marroquinería de PVC y Mochilitas Infantiles', barcode: 'IM-01-0001', costPrice: 4800, sellPrice: 11500, stock: 6, minStock: 2 },
+      { id: 'prod-704', name: 'Set de Playa en PVC (Balde + Moldes + Pala)', brand: 'Línea Económica', category: 'Infantil - Accesorios de Verano y Playa en PVC', barcode: 'IA-01-0001', costPrice: 2200, sellPrice: 5200, stock: 10, minStock: 3 },
+      { id: 'prod-801', name: 'Cantimplora Térmica Infantil con Sorbete 500ml', brand: 'Línea Infantil', category: 'Infantil - Cantimploras Térmicas, Vasos Térmicos y de Plástico / Aluminio', barcode: 'IT-01-0002', costPrice: 3200, sellPrice: 7500, stock: 10, minStock: 3 },
+      { id: 'prod-802', name: 'Lunchera Térmica de PVC + Vaso de Regalo', brand: 'Trendy', category: 'Infantil - Luncheras Térmicas y PVC (con Vaso o Compartimientos)', barcode: 'IL-01-0001', costPrice: 4500, sellPrice: 10800, stock: 8, minStock: 2 },
+      { id: 'prod-803', name: 'Taza de Porcelana Infantil con Platito Estampado', brand: 'Línea Infantil', category: 'Tazas y Vajilla - Tazas de Porcelana (Adulto y Niños), con Platito y Plásticas', barcode: 'VT-01-0001', costPrice: 1800, sellPrice: 4200, stock: 12, minStock: 3 },
+      { id: 'prod-804', name: 'Parlante Bluetooth Infantil con Luces LED RGB', brand: 'Sin Marca', category: 'Tecnología & Regalería - Parlantes Bluetooth (Niños y Surtidos) y Lámparas Velador', barcode: 'TT-01-0001', costPrice: 5800, sellPrice: 13500, stock: 6, minStock: 2 },
+      { id: 'prod-805', name: 'Espejo de Mesa con Luz LED Regulable y Base Organizadora', brand: 'Pink 365', category: 'Regalería - Espejos con Base, Manuales y con Luz LED', barcode: 'RE-01-0001', costPrice: 3900, sellPrice: 9200, stock: 7, minStock: 2 },
+      { id: 'prod-806', name: 'Set de Asado Completo (Cuchillo + Tenedor en Estuche Cuero)', brand: 'Línea Económica', category: 'Regalería - Sets y Kits para Asado (Estuches y Cubiertos)', barcode: 'RA-01-0001', costPrice: 6200, sellPrice: 14500, stock: 5, minStock: 2 }
+    ];
+
+    const INITIAL_CUSTOMERS = [
+      { id: 'cust-ocasional', name: 'Cliente Ocasional', dni: '-', address: '-', phone: '-', balance: 0 },
+      { id: 'cust-101', name: 'María Giménez', dni: '34567890', address: 'Av. San Martín 450', phone: '3794123456', balance: 28490, created_at: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'cust-102', name: 'Laura Fernández', dni: '29876543', address: 'Calle Córdoba 1230', phone: '3794987654', balance: 14500, created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString() }
+    ];
+
+    const DataContext = createContext();
+    function DataProvider({ children }) {
+      const { user } = useAuth();
+
+      const sanitizeProducts = (list) => {
+        if (!Array.isArray(list)) return [];
+        return list.map(p => {
+          let code = (p.barcode || '').trim();
+          if (!code || code.startsWith('prod-') || /^\d+$/.test(code) || code.startsWith('MAR-') || code.startsWith('A01-')) {
+            code = generateAutoCode(p.category || 'General', list, p.name);
+          }
+          return { ...p, barcode: code };
+        });
+      };
+
+      const [products, setProducts] = useState(() => { 
+        try { 
+          const s = localStorage.getItem('tina_products'); 
+          const rawList = s ? JSON.parse(s) : INITIAL_PRODUCTS;
+          const sanitized = sanitizeProducts(rawList);
+          localStorage.setItem('tina_products', JSON.stringify(sanitized));
+          return sanitized;
+        } catch { 
+          const sanitized = sanitizeProducts(INITIAL_PRODUCTS);
+          localStorage.setItem('tina_products', JSON.stringify(sanitized));
+          return sanitized; 
+        } 
+      });
+
+      const [categories, setCategories] = useState(() => { 
+        try { 
+          const s = localStorage.getItem('tina_categories'); 
+          if (!s) return CATEGORIES;
+          const parsed = JSON.parse(s);
+          return Array.isArray(parsed) && parsed.length > 0 ? parsed : CATEGORIES;
+        } catch { return CATEGORIES; } 
+      });
+
+      const [brands, setBrands] = useState(() => { 
+        try { 
+          const s = localStorage.getItem('tina_brands'); 
+          if (!s) return BRANDS;
+          const parsed = JSON.parse(s);
+          return Array.isArray(parsed) && parsed.length > 0 ? parsed : BRANDS;
+        } catch { return BRANDS; } 
+      });
+
+      const saveCategories = (newList) => {
+        setCategories(newList);
+        localStorage.setItem('tina_categories', JSON.stringify(newList));
+      };
+
+      const addCategory = (newCat) => {
+        const clean = newCat ? newCat.trim() : '';
+        if (!clean || categories.some(c => c.toLowerCase() === clean.toLowerCase())) return;
+        const updated = [...categories, clean];
+        saveCategories(updated);
+      };
+
+      const saveBrands = (newList) => {
+        setBrands(newList);
+        localStorage.setItem('tina_brands', JSON.stringify(newList));
+      };
+
+      const addBrand = (newB) => {
+        const clean = newB ? newB.trim() : '';
+        if (!clean || brands.some(b => b.toLowerCase() === clean.toLowerCase())) return;
+        const updated = [...brands, clean];
+        saveBrands(updated);
+      };
+
+      const deleteBrand = (bToDelete) => {
+        const updated = brands.filter(b => b !== bToDelete);
+        saveBrands(updated);
+      };
+
+      const [customers, setCustomers] = useState(() => { try { const s = localStorage.getItem('tina_customers'); return s ? JSON.parse(s) : INITIAL_CUSTOMERS; } catch { return INITIAL_CUSTOMERS; } });
+      const [sales, setSales] = useState(() => { try { const s = localStorage.getItem('tina_sales'); return s ? JSON.parse(s) : []; } catch { return []; } });
+      const [payments, setPayments] = useState(() => { try { const s = localStorage.getItem('tina_payments'); return s ? JSON.parse(s) : []; } catch { return []; } });
+      const [expenses, setExpenses] = useState(() => { 
+        try { 
+          const s = localStorage.getItem('tina_expenses'); 
+          if (!s) return [];
+          const parsed = JSON.parse(s);
+          return Array.isArray(parsed) ? parsed.filter(e => e && typeof e === 'object').map(e => ({
+            id: e.id || ('exp-' + Date.now()),
+            category: e.category || 'Mantenimiento / Otros',
+            description: e.description || 'Gasto',
+            amount: Number(e.amount) || 0,
+            paymentMethod: e.paymentMethod || 'Efectivo',
+            userName: e.userName || 'Cajero',
+            created_at: e.created_at || new Date().toISOString()
+          })) : [];
+        } catch { return []; } 
+      });
+      const [cashSession, setCashSession] = useState(() => { try { const s = localStorage.getItem('tina_cash_session'); return s ? JSON.parse(s) : { status: 'closed', openAmount: 0, openedAt: null }; } catch { return { status: 'closed', openAmount: 0, openedAt: null }; } });
+      const [cashHistory, setCashHistory] = useState(() => { try { const s = localStorage.getItem('tina_cash_history'); return s ? JSON.parse(s) : []; } catch { return []; } });
+
+      const saveProds = (d) => { setProducts(d); localStorage.setItem('tina_products', JSON.stringify(d)); };
+      const saveCusts = (d) => { setCustomers(d); localStorage.setItem('tina_customers', JSON.stringify(d)); };
+      const saveSales = (d) => { setSales(d); localStorage.setItem('tina_sales', JSON.stringify(d)); };
+      const savePays = (d) => { setPayments(d); localStorage.setItem('tina_payments', JSON.stringify(d)); };
+      const saveExps = (d) => { setExpenses(d); localStorage.setItem('tina_expenses', JSON.stringify(d)); };
+
+      const addProduct = (d) => { 
+        const brandName = (d.brand || 'Sin Marca').trim();
+        if (brandName && brandName !== 'Sin Marca' && !brands.includes(brandName)) addBrand(brandName);
+        
+        const catName = (d.category || 'General').trim();
+        if (catName && catName !== 'General' && !categories.includes(catName)) addCategory(catName);
+
+        let finalBarcode = (d.barcode || '').trim().toUpperCase();
+        const isTaken = products.some(p => p.barcode && p.barcode.trim().toUpperCase() === finalBarcode);
+        if (!finalBarcode || finalBarcode.startsWith('PROD-') || isTaken) {
+          finalBarcode = generateAutoCode(catName, products, d.name);
+        }
+
+        const newP = { 
+          id: 'prod-' + Date.now(), 
+          name: d.name.trim(), 
+          brand: brandName, 
+          category: catName, 
+          barcode: finalBarcode, 
+          costPrice: parseFloat(d.costPrice)||0, 
+          sellPrice: parseFloat(d.sellPrice)||0, 
+          stock: d.stock !== undefined && !isNaN(parseInt(d.stock)) ? parseInt(d.stock) : 1, 
+          minStock: d.minStock !== undefined && !isNaN(parseInt(d.minStock)) ? parseInt(d.minStock) : 3 
+        };
+        saveProds([newP, ...products]); 
+      };
+      const updateProduct = (id, d) => { 
+        const brandName = (d.brand || 'Sin Marca').trim();
+        if (brandName && brandName !== 'Sin Marca' && !brands.includes(brandName)) addBrand(brandName);
+
+        const catName = (d.category || 'General').trim();
+        if (catName && catName !== 'General' && !categories.includes(catName)) addCategory(catName);
+
+        let finalBarcode = (d.barcode || '').trim().toUpperCase();
+        const isTaken = products.some(other => other.id !== id && other.barcode && other.barcode.trim().toUpperCase() === finalBarcode);
+        if (!finalBarcode || finalBarcode.startsWith('PROD-') || isTaken) {
+          finalBarcode = generateAutoCode(catName, products, d.name, '01', id);
+        }
+
+        saveProds(products.map(p => p.id === id ? { 
+          ...p, 
+          name: d.name.trim(), 
+          brand: brandName, 
+          category: catName, 
+          barcode: finalBarcode, 
+          costPrice: parseFloat(d.costPrice)||0, 
+          sellPrice: parseFloat(d.sellPrice)||0, 
+          stock: d.stock !== undefined && !isNaN(parseInt(d.stock)) ? parseInt(d.stock) : p.stock, 
+          minStock: d.minStock !== undefined && !isNaN(parseInt(d.minStock)) ? parseInt(d.minStock) : p.minStock 
+        } : p)); 
+      };
+      const deleteProduct = (id) => { saveProds(products.filter(p => p.id !== id)); };
+      const adjustProductStock = (id, delta) => {
+        saveProds(products.map(p => p.id === id ? { ...p, stock: Math.max(0, (parseInt(p.stock, 10) || 0) + delta) } : p));
+      };
+
+      const addCustomer = (d) => {
+        const newC = { id: 'cust-' + Date.now(), name: d.name.trim(), dni: d.dni?.trim()||'-', address: d.address?.trim()||'-', phone: d.phone?.trim()||'-', balance: 0, created_at: new Date().toISOString() };
+        saveCusts([...customers, newC]); return newC;
+      };
+      const updateCustomer = (id, d) => { saveCusts(customers.map(c => c.id === id ? { ...c, ...d } : c)); };
+      const deleteCustomer = (id) => { saveCusts(customers.filter(c => c.id !== id)); };
+
+      const addPayment = (customerId, amount, paymentMethod = 'Efectivo', notes = '') => {
+        const val = parseFloat(amount); if (!val || val <= 0) return;
+        const newPay = { id: 'pay-' + Date.now(), customerId, amount: val, paymentMethod, notes: notes.trim(), created_at: new Date().toISOString() };
+        savePays([newPay, ...payments]); saveCusts(customers.map(c => c.id === customerId ? { ...c, balance: Math.max(0, (c.balance||0) - val) } : c));
+      };
+
+      const addExpense = (d) => {
+        if (!cashSession || cashSession.status !== 'open') throw new Error('La caja diaria se encuentra CERRADA.');
+        const val = parseFloat(d.amount);
+        if (isNaN(val) || val <= 0) throw new Error('Ingrese un monto válido mayor a $0.');
+        const newExp = { id: 'exp-' + Date.now(), category: d.category || 'Mantenimiento / Otros', description: d.description ? d.description.trim() : 'Gasto', amount: val, paymentMethod: d.paymentMethod||'Efectivo', userName: user?.full_name||'Cajero', created_at: new Date().toISOString() };
+        saveExps([newExp, ...(Array.isArray(expenses) ? expenses : [])]); return newExp;
+      };
+      const deleteExpense = (id) => saveExps((Array.isArray(expenses) ? expenses : []).filter(e => e && e.id !== id));
+
+      const processSale = ({ items, paymentMethod, customerId, newCustomerData }) => {
+        if (!cashSession || cashSession.status !== 'open') throw new Error('La caja diaria se encuentra CERRADA. Abra la caja para registrar ventas.');
+        let activeCust = customers.find(c => c.id === customerId);
+        if (!activeCust && newCustomerData) activeCust = addCustomer(newCustomerData);
+        if (paymentMethod === 'Cuenta Corriente' && (!activeCust || activeCust.id === 'cust-ocasional')) throw new Error('Seleccione o registre un cliente válido con Nombre, DNI, Domicilio y Teléfono para Cta Cte.');
+
+        const subtotal = items.reduce((acc, i) => acc + (i.sellPrice * i.quantity), 0);
+        const interestAmount = paymentMethod === 'Cuenta Corriente' ? Math.round(subtotal * 0.10) : 0;
+        const total = subtotal + interestAmount;
+        const dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 30);
+
+        const newSale = {
+          id: 'sale-' + Date.now(), customerId: activeCust ? activeCust.id : 'cust-ocasional', customerName: activeCust ? activeCust.name : 'Cliente Ocasional',
+          userId: user?.id, userName: user?.full_name||'Cajero', paymentMethod, subtotal, interestAmount, total, dueDate: dueDate.toISOString(),
+          status: 'completed', created_at: new Date().toISOString(),
+          items: items.map(i => ({ productId: i.id, name: i.name, quantity: i.quantity, unitPrice: i.sellPrice, subtotal: i.sellPrice * i.quantity }))
+        };
+
+        saveProds(products.map(p => { const item = items.find(i => i.id === p.id); return item ? { ...p, stock: Math.max(0, p.stock - item.quantity) } : p; }));
+        if (paymentMethod === 'Cuenta Corriente' && activeCust) {
+          saveCusts(customers.map(c => c.id === activeCust.id ? { ...c, balance: (c.balance||0) + total } : c));
+        }
+        saveSales([newSale, ...sales]); return newSale;
+      };
+
+      const openCash = (openAmount) => {
+        const sess = { id: 'cash-' + Date.now(), status: 'open', openAmount: parseFloat(openAmount)||0, openedAt: new Date().toISOString(), openedBy: user?.full_name||'Cajero' };
+        setCashSession(sess); localStorage.setItem('tina_cash_session', JSON.stringify(sess));
+      };
+
+      const closeCash = (closeAmount, auditDetails = null) => {
+        const sess = { ...(cashSession||{}), status: 'closed', closeAmount: parseFloat(closeAmount)||0, closedAt: new Date().toISOString(), closedBy: user?.full_name||'Cajero', audit: auditDetails };
+        setCashSession(sess); localStorage.setItem('tina_cash_session', JSON.stringify(sess));
+        const updatedH = [sess, ...cashHistory]; setCashHistory(updatedH); localStorage.setItem('tina_cash_history', JSON.stringify(updatedH));
+      };
+
+      const deleteCashHistoryRecord = (id) => {
+        if (user?.role !== 'admin') throw new Error('Solo el Administrador puede eliminar registros del historial de caja.');
+        const updated = cashHistory.filter(h => h.id !== id);
+        setCashHistory(updated); localStorage.setItem('tina_cash_history', JSON.stringify(updated));
+      };
+
+      const exportBackupData = () => {
+        const backupObj = { version: '2.5', exportDate: new Date().toISOString(), appName: 'Regalería Tina Gestor', products, customers, sales, payments, expenses, cashSession, cashHistory };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj, null, 2));
+        const downloadAnchor = document.createElement('a');
+        const dateStamp = new Date().toISOString().split('T')[0];
+        downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", `regaleria_tina_backup_${dateStamp}.json`);
+        document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
+      };
+
+      const importBackupData = (jsonData) => {
+        try {
+          const parsed = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+          if (!parsed || typeof parsed !== 'object') throw new Error('Formato no válido.');
+          if (parsed.products) { setProducts(parsed.products); localStorage.setItem('tina_products', JSON.stringify(parsed.products)); }
+          if (parsed.customers) { setCustomers(parsed.customers); localStorage.setItem('tina_customers', JSON.stringify(parsed.customers)); }
+          if (parsed.sales) { setSales(parsed.sales); localStorage.setItem('tina_sales', JSON.stringify(parsed.sales)); }
+          if (parsed.payments) { setPayments(parsed.payments); localStorage.setItem('tina_payments', JSON.stringify(parsed.payments)); }
+          if (parsed.expenses) { setExpenses(parsed.expenses); localStorage.setItem('tina_expenses', JSON.stringify(parsed.expenses)); }
+          if (parsed.cashSession) { setCashSession(parsed.cashSession); localStorage.setItem('tina_cash_session', JSON.stringify(parsed.cashSession)); }
+          if (parsed.cashHistory) { setCashHistory(parsed.cashHistory); localStorage.setItem('tina_cash_history', JSON.stringify(parsed.cashHistory)); }
+          return true;
+        } catch (e) { throw new Error('Error al importar copia: ' + e.message); }
+      };
+
+      const lowStockProducts = useMemo(() => products.filter(p => p.stock <= p.minStock), [products]);
+      const overdueCustomers = useMemo(() => {
+        return customers.filter(c => {
+          if (!c.balance || c.balance <= 0 || c.id === 'cust-ocasional') return false;
+          const cSales = sales.filter(s => s.customerId === c.id && s.paymentMethod === 'Cuenta Corriente');
+          if (cSales.length === 0) return c.created_at ? ((Date.now() - new Date(c.created_at).getTime()) / (1000*3600*24)) >= 30 : false;
+          const oldest = cSales.reduce((min, s) => new Date(s.created_at) < min ? new Date(s.created_at) : min, new Date());
+          return ((Date.now() - oldest.getTime()) / (1000*3600*24)) >= 30;
+        });
+      }, [customers, sales]);
+
+      return (
+        <DataContext.Provider value={{
+          products, categories, addCategory, brands, addBrand, deleteBrand, addProduct, updateProduct, deleteProduct, adjustProductStock,
+          customers, addCustomer, updateCustomer, deleteCustomer, addPayment,
+          sales, payments, processSale, expenses, expenseCategories: EXPENSE_CATEGORIES, addExpense, deleteExpense,
+          cashSession, cashHistory, openCash, closeCash, deleteCashHistoryRecord, exportBackupData, importBackupData, lowStockProducts, overdueCustomers
+        }}>
+          {children}
+        </DataContext.Provider>
+      );
+    }
+    const useData = () => useContext(DataContext);
+
+    // --- SECTOR VENTAS (POS) COMPLETO ---
+    function POS() {
+      const { products, customers, addCustomer, updateCustomer, deleteCustomer, processSale, cashSession } = useData();
+
+      const [search, setSearch] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('ALL');
+      const [cart, setCart] = useState([]);
+      const [paymentMethod, setPaymentMethod] = useState('Efectivo');
+      const [selectedCustomerId, setSelectedCustomerId] = useState('');
+
+      const [showNewCustModal, setShowNewCustModal] = useState(false);
+      const [custName, setCustName] = useState('');
+      const [custDni, setCustDni] = useState('');
+      const [custAddress, setCustAddress] = useState('');
+      const [custPhone, setCustPhone] = useState('');
+
+      const [showEditCustModal, setShowEditCustModal] = useState(false);
+      const [editForm, setEditForm] = useState({ name: '', dni: '', address: '', phone: '' });
+
+      const [completedSale, setCompletedSale] = useState(null);
+      const [errorMsg, setErrorMsg] = useState('');
+
+      const selectedCustomerObj = useMemo(() => customers.find(c => c.id === selectedCustomerId), [customers, selectedCustomerId]);
+      const filteredProducts = useMemo(() => {
+        const term = search.trim().toLowerCase();
+        if (!term) {
+          return products.filter(p => selectedCategory === 'ALL' || p.category.startsWith(selectedCategory));
+        }
+        const cleanTerm = term.replace(/[^a-z0-9]/g, '');
+        return products.filter(p => {
+          const codeLower = (p.barcode || '').toLowerCase();
+          const cleanCode = codeLower.replace(/[^a-z0-9]/g, '');
+
+          const matchCode = codeLower.includes(term) || (cleanCode && cleanCode.includes(cleanTerm));
+          const matchName = p.name.toLowerCase().includes(term);
+          const matchCategory = p.category.toLowerCase().includes(term);
+          const matchBrand = p.brand && p.brand.toLowerCase().includes(term);
+
+          const matchSearch = matchCode || matchName || matchCategory || matchBrand;
+          const matchCat = selectedCategory === 'ALL' || p.category.startsWith(selectedCategory);
+          return matchSearch && matchCat;
+        });
+      }, [products, search, selectedCategory]);
+
+      const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter' && search.trim()) {
+          const term = search.trim().toLowerCase();
+          const cleanTerm = term.replace(/[^a-z0-9]/g, '');
+          const exactMatch = products.find(p => {
+            const codeLower = (p.barcode || '').toLowerCase();
+            const cleanCode = codeLower.replace(/[^a-z0-9]/g, '');
+            return codeLower === term || (cleanCode && cleanCode === cleanTerm);
+          });
+          if (exactMatch) {
+            if (exactMatch.stock > 0) {
+              addToCart(exactMatch);
+              setSearch('');
+              setErrorMsg('');
+            } else {
+              setErrorMsg(`El producto "${exactMatch.name}" (${exactMatch.barcode}) se encuentra AGOTADO.`);
+            }
+          }
+        }
+      };
+
+      const addToCart = (product) => {
+        if (product.stock <= 0) return;
+        setCart(prev => {
+          const existing = prev.find(item => item.id === product.id);
+          if (existing) {
+            if (existing.quantity >= product.stock) return prev;
+            return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+          }
+          return [...prev, { ...product, quantity: 1 }];
+        });
+      };
+
+      const updateCartQty = (id, delta) => {
+        setCart(prev => prev.map(item => {
+          if (item.id === id) {
+            const newQty = item.quantity + delta;
+            if (newQty <= 0) return null;
+            if (newQty > item.stock) return item;
+            return { ...item, quantity: newQty };
+          }
+          return item;
+        }).filter(Boolean));
+      };
+
+      const removeItemFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
+      const clearAllCart = () => setCart([]);
+
+      const subtotal = useMemo(() => cart.reduce((acc, item) => acc + (item.sellPrice * item.quantity), 0), [cart]);
+      const interestAmount = paymentMethod === 'Cuenta Corriente' ? Math.round(subtotal * 0.10) : 0;
+      const total = subtotal + interestAmount;
+      const formatPrice = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(v);
+
+      const handleQuickAddCustomer = (e) => {
+        e.preventDefault();
+        if (!custName.trim() || !custDni.trim() || !custAddress.trim() || !custPhone.trim()) {
+          return setErrorMsg('Ingrese Nombre, DNI, Domicilio y Teléfono.');
+        }
+        const newCust = addCustomer({ name: custName, dni: custDni, address: custAddress, phone: custPhone });
+        setSelectedCustomerId(newCust.id);
+        setShowNewCustModal(false); setCustName(''); setCustDni(''); setCustAddress(''); setCustPhone(''); setErrorMsg('');
+      };
+
+      const openEditCustomerModal = () => {
+        if (!selectedCustomerObj) return;
+        setEditForm({ name: selectedCustomerObj.name, dni: selectedCustomerObj.dni||'', address: selectedCustomerObj.address||'', phone: selectedCustomerObj.phone||'' });
+        setShowEditCustModal(true);
+      };
+
+      const handleSaveEditCustomer = (e) => {
+        e.preventDefault();
+        if (selectedCustomerObj && editForm.name.trim()) {
+          updateCustomer(selectedCustomerObj.id, editForm);
+          setShowEditCustModal(false);
+        }
+      };
+
+      const handleDeleteSelectedCustomer = () => {
+        if (selectedCustomerObj && window.confirm(`¿Eliminar al cliente "${selectedCustomerObj.name}"?`)) {
+          deleteCustomer(selectedCustomerObj.id);
+          setSelectedCustomerId('');
+        }
+      };
+
+      const handleCheckout = () => {
+        setErrorMsg('');
+        if (!cashSession || cashSession.status !== 'open') {
+          return setErrorMsg('La caja diaria se encuentra CERRADA. Abra la caja en la pestaña "Caja Diaria" para cobrar.');
+        }
+        if (cart.length === 0) return setErrorMsg('El carrito está vacío.');
+        if (paymentMethod === 'Cuenta Corriente' && !selectedCustomerId) {
+          return setErrorMsg('Debe seleccionar o registrar un cliente válido para cobrar en Cuenta Corriente.');
+        }
+
+        try {
+          const saleResult = processSale({ items: cart, paymentMethod, customerId: selectedCustomerId });
+          setCompletedSale(saleResult);
+          clearAllCart();
+          setSelectedCustomerId('');
+        } catch (err) {
+          setErrorMsg(err.message || 'Error al procesar la venta.');
+        }
+      };
+
+      return (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '24px', maxWidth: '1400px', margin: '24px auto', padding: '0 20px' }}>
+          <div>
+            {cashSession?.status !== 'open' && (
+              <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '12px 18px', borderRadius: '12px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <AlertTriangle size={20} />
+                <div><strong>Caja Diaria Cerrada:</strong> Abra la caja desde la pestaña "Caja Diaria" para registrar ventas.</div>
+              </div>
+            )}
+
+            <div className="glass-card" style={{ padding: '18px 24px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', gap: '14px', marginBottom: '14px' }}>
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    style={{ paddingLeft: '42px', fontSize: '0.95rem', fontWeight: 600 }} 
+                    placeholder="🔍 Buscar por Código (ej. MB-01-0001), Nombre, Marca o Categoría..." 
+                    value={search} 
+                    onChange={e => setSearch(e.target.value)} 
+                    onKeyDown={handleSearchKeyDown}
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                {['ALL', 'Bijouterie', 'Marroquinería', 'Regalería'].map(cat => (
+                  <button key={cat} className={`btn btn-sm ${selectedCategory === cat ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setSelectedCategory(cat)}>
+                    {cat === 'ALL' ? 'Todos los Productos' : cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
+              {filteredProducts.map(p => {
+                const isOutOfStock = p.stock <= 0;
+                const isLowStock = p.stock <= p.minStock && !isOutOfStock;
+                return (
+                  <div key={p.id} className="glass-card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', opacity: isOutOfStock ? 0.6 : 1 }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--color-primary)', fontWeight: 700 }}>{p.category.split(' - ')[1] || p.category}</span>
+                        <span className={`badge ${isOutOfStock ? 'badge-danger' : isLowStock ? 'badge-warning' : 'badge-success'}`}>{isOutOfStock ? 'Agotado' : `Stock: ${p.stock}`}</span>
+                      </div>
+                      <div style={{ marginBottom: '6px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ec4899', background: 'rgba(236, 72, 153, 0.12)', padding: '2px 8px', borderRadius: '12px' }}>
+                          🏷️ {p.brand || 'Sin Marca'}
+                        </span>
+                        <span style={{ 
+                          fontSize: '0.75rem', 
+                          fontWeight: 900, 
+                          color: '#c4b5fd', 
+                          background: 'rgba(139, 92, 246, 0.15)', 
+                          border: '1px solid rgba(139, 92, 246, 0.3)', 
+                          padding: '2px 8px', 
+                          borderRadius: '8px', 
+                          fontFamily: 'monospace',
+                          letterSpacing: '0.05em'
+                        }}>
+                          {p.barcode && !p.barcode.startsWith('prod-') ? p.barcode : p.id}
+                        </span>
+                      </div>
+                      <h4 style={{ fontSize: '0.98rem', fontWeight: 700, marginBottom: '12px' }}>{p.name}</h4>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>{formatPrice(p.sellPrice)}</div>
+                      <button className="btn btn-primary btn-sm" style={{ width: '100%' }} onClick={() => addToCart(p)} disabled={isOutOfStock}>
+                        <Plus size={16} /> Agregar al Carrito
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <div className="glass-card" style={{ padding: '24px', position: 'sticky', top: '90px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', paddingBottom: '12px', borderBottom: 'var(--glass-border)' }}>
+                <h3 style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShoppingBag size={20} style={{ color: 'var(--color-primary)' }} /> Carrito ({cart.reduce((a, b) => a + b.quantity, 0)})
+                </h3>
+                {cart.length > 0 && <button className="btn btn-secondary btn-sm" onClick={clearAllCart} style={{ color: '#ef4444' }}><Trash2 size={14} /> Vaciar</button>}
+              </div>
+
+              {errorMsg && <div style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', padding: '10px', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '14px' }}>{errorMsg}</div>}
+
+              <div style={{ maxHeight: '260px', overflowY: 'auto', marginBottom: '20px' }}>
+                {cart.length === 0 ? (
+                  <p style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '30px 0', fontSize: '0.9rem' }}>🛒 Carrito vacío.<br/>Haz clic en <strong>"+ Agregar al Carrito"</strong> en los productos.</p>
+                ) : (
+                  cart.map(item => (
+                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '0.88rem', fontWeight: 700 }}>{item.name}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{formatPrice(item.sellPrice)} c/u × {item.quantity} = <strong style={{ color: '#fff' }}>{formatPrice(item.sellPrice * item.quantity)}</strong></div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button className="btn btn-secondary btn-icon" onClick={() => updateCartQty(item.id, -1)} style={{ padding: '4px 8px' }}><Minus size={13} /></button>
+                        <span style={{ fontWeight: 800, width: '22px', textAlign: 'center' }}>{item.quantity}</span>
+                        <button className="btn btn-secondary btn-icon" onClick={() => updateCartQty(item.id, 1)} style={{ padding: '4px 8px' }}><Plus size={13} /></button>
+                        <button className="btn btn-secondary btn-icon" onClick={() => removeItemFromCart(item.id)} style={{ padding: '6px', color: '#ef4444', marginLeft: '4px' }}><Trash2 size={14} /></button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label className="form-label">Forma de Pago</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <button className={`btn btn-sm ${paymentMethod === 'Efectivo' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setPaymentMethod('Efectivo')}><DollarSign size={14} /> Efectivo</button>
+                  <button className={`btn btn-sm ${paymentMethod === 'Transferencia' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setPaymentMethod('Transferencia')}><Smartphone size={14} /> Transferencia</button>
+                  <button className={`btn btn-sm ${paymentMethod === 'Tarjeta' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setPaymentMethod('Tarjeta')}><CreditCard size={14} /> Tarjeta</button>
+                  <button className={`btn btn-sm ${paymentMethod === 'Cuenta Corriente' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setPaymentMethod('Cuenta Corriente')}><FileText size={14} /> Cta. Corriente</button>
+                </div>
+              </div>
+
+              {paymentMethod === 'Cuenta Corriente' && (
+                <div style={{ background: 'rgba(236, 72, 153, 0.08)', border: '1px solid rgba(236, 72, 153, 0.3)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f472b6' }}>CLIENTE CUENTA CORRIENTE</span>
+                    <button className="btn btn-primary btn-sm" onClick={() => setShowNewCustModal(true)} style={{ fontSize: '0.75rem', padding: '5px 10px' }}><UserPlus size={13} /> + Nuevo Cliente</button>
+                  </div>
+
+                  <select className="form-control" value={selectedCustomerId} onChange={e => setSelectedCustomerId(e.target.value)} style={{ fontSize: '0.88rem', marginBottom: selectedCustomerObj ? '12px' : '0' }}>
+                    <option value="">-- Seleccionar Cliente Registrado --</option>
+                    {customers.filter(c => c.id !== 'cust-ocasional').map(c => (
+                      <option key={c.id} value={c.id}>{c.name} (DNI: {c.dni})</option>
+                    ))}
+                  </select>
+
+                  {selectedCustomerObj && (
+                    <div style={{ background: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(236, 72, 153, 0.25)', borderRadius: '10px', padding: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <div><strong style={{ color: '#fff' }}>{selectedCustomerObj.name}</strong><div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>DNI: {selectedCustomerObj.dni||'-'}</div></div>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button className="btn btn-secondary btn-sm" onClick={openEditCustomerModal} style={{ padding: '4px 8px' }}><Edit2 size={13} /> Modificar</button>
+                          <button className="btn btn-secondary btn-sm" onClick={handleDeleteSelectedCustomer} style={{ padding: '4px 8px', color: '#ef4444' }}><Trash2 size={13} /> Eliminar</button>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>📍 {selectedCustomerObj.address||'-'} | 📞 {selectedCustomerObj.phone||'-'}</div>
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dotted rgba(236,72,153,0.3)', fontSize: '0.82rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fbbf24', fontWeight: 700 }}><span>Recargo 10% Cta. Cte. (30 días):</span><span>+ {formatPrice(interestAmount)}</span></div>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ borderTop: 'var(--glass-border)', paddingTop: '16px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: 'var(--text-muted)' }}><span>Subtotal:</span><span>{formatPrice(subtotal)}</span></div>
+                {paymentMethod === 'Cuenta Corriente' && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fbbf24', marginBottom: '8px' }}><span>Interés Cta Cte (+10%):</span><span>+ {formatPrice(interestAmount)}</span></div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem', fontWeight: 800, color: '#fff' }}>
+                  <span>Total a Cobrar:</span><span style={{ color: 'var(--color-primary)' }}>{formatPrice(total)}</span>
+                </div>
+              </div>
+
+              <button className={`btn ${cashSession?.status === 'open' ? 'btn-success' : 'btn-secondary'}`} style={{ width: '100%', padding: '14px', fontSize: '1.05rem' }} onClick={handleCheckout} disabled={cart.length === 0 || cashSession?.status !== 'open'}>
+                <CheckCircle size={20} /> {cashSession?.status !== 'open' ? '🔒 Caja Cerrada' : 'Confirmar Venta y Cobrar'}
+              </button>
+            </div>
+          </div>
+
+          {showNewCustModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header"><h3>Registrar Cliente en Cta. Cte.</h3><button className="btn btn-secondary btn-sm" onClick={() => setShowNewCustModal(false)}>✕</button></div>
+                <form onSubmit={handleQuickAddCustomer}>
+                  <div className="modal-body">
+                    <div className="form-group"><label className="form-label">Nombre y Apellido *</label><input type="text" className="form-control" required value={custName} onChange={e => setCustName(e.target.value)} /></div>
+                    <div className="form-group"><label className="form-label">DNI *</label><input type="text" className="form-control" required value={custDni} onChange={e => setCustDni(e.target.value)} /></div>
+                    <div className="form-group"><label className="form-label">Domicilio *</label><input type="text" className="form-control" required value={custAddress} onChange={e => setCustAddress(e.target.value)} /></div>
+                    <div className="form-group"><label className="form-label">Teléfono *</label><input type="tel" className="form-control" required value={custPhone} onChange={e => setCustPhone(e.target.value)} /></div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowNewCustModal(false)}>Cancelar</button>
+                    <button type="submit" className="btn btn-primary">Guardar y Seleccionar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {showEditCustModal && selectedCustomerObj && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header"><h3>Modificar Datos de Cliente</h3><button className="btn btn-secondary btn-sm" onClick={() => setShowEditCustModal(false)}>✕</button></div>
+                <form onSubmit={handleSaveEditCustomer}>
+                  <div className="modal-body">
+                    <div className="form-group"><label className="form-label">Nombre *</label><input type="text" className="form-control" required value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} /></div>
+                    <div className="form-group"><label className="form-label">DNI *</label><input type="text" className="form-control" required value={editForm.dni} onChange={e => setEditForm({ ...editForm, dni: e.target.value })} /></div>
+                    <div className="form-group"><label className="form-label">Domicilio *</label><input type="text" className="form-control" required value={editForm.address} onChange={e => setEditForm({ ...editForm, address: e.target.value })} /></div>
+                    <div className="form-group"><label className="form-label">Teléfono *</label><input type="tel" className="form-control" required value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} /></div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowEditCustModal(false)}>Cancelar</button>
+                    <button type="submit" className="btn btn-primary">Guardar Cambios</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {completedSale && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '480px', textAlign: 'center' }}>
+                <div className="modal-header" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
+                  <h3 style={{ color: '#34d399', display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={22} /> ¡Venta Registrada con Éxito!</h3>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setCompletedSale(null)}>✕</button>
+                </div>
+                <div className="modal-body">
+                  <img src="./public/logo.jpg" alt="Logo" style={{ width: '60px', height: '60px', borderRadius: '14px', margin: '0 auto 10px auto' }} />
+                  <h4 style={{ fontWeight: 800 }}>REGALERÍA TINA</h4>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ticket #{completedSale.id}</p>
+                  <div style={{ margin: '20px 0', padding: '16px', background: 'rgba(15,23,42,0.6)', borderRadius: '12px', textAlign: 'left' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span>Cliente:</span><strong>{completedSale.customerName}</strong></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span>Medio de Pago:</span><span className="badge badge-primary">{completedSale.paymentMethod}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 800, marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border-color)' }}>
+                      <span>Total Venta:</span><span style={{ color: 'var(--color-primary)' }}>{formatPrice(completedSale.total)}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-primary" onClick={() => setCompletedSale(null)} style={{ width: '100%' }}>Aceptar y Realizar Nueva Venta</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // --- RESTO DE VISTAS (Navbar, Login, Accounts, Inventory, CashRegister, UsersAdmin, App) ---
+    function Navbar({ activeTab, setActiveTab }) {
+      const { user, logout, isAdmin } = useAuth();
+      const { lowStockProducts, overdueCustomers, cashSession } = useData();
+      const [theme, setTheme] = useState(() => localStorage.getItem('tina_theme') || 'dark');
+      const [timeStr, setTimeStr] = useState('');
+
+      useEffect(() => {
+        const updateTime = () => {
+          const now = new Date();
+          setTimeStr(now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+        };
+        updateTime();
+        const interval = setInterval(updateTime, 1000);
+        return () => clearInterval(interval);
+      }, []);
+
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.key === 'F2') { e.preventDefault(); setActiveTab('pos'); }
+          else if (e.key === 'F3') { e.preventDefault(); setActiveTab('accounts'); }
+          else if (e.key === 'F4') { e.preventDefault(); setActiveTab('cash'); }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [setActiveTab]);
+
+      useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('tina_theme', theme);
+      }, [theme]);
+
+      const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+      const isCashOpen = cashSession && cashSession.status === 'open';
+
+      return (
+        <header className="glass-card" style={{ borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none', position: 'sticky', top: 0, zIndex: 50, padding: '12px 24px' }}>
+          <div style={{ maxWidth: '1440px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }} onClick={() => setActiveTab('pos')}>
+              <div style={{ position: 'relative' }}>
+                <img src="./public/logo.jpg" alt="Logo" style={{ width: '50px', height: '50px', borderRadius: '14px', objectFit: 'cover', border: '2px solid var(--color-primary)', boxShadow: '0 0 16px rgba(236,72,153,0.5)' }} />
+                <span className="live-pulse-dot" style={{ position: 'absolute', bottom: '-2px', right: '-2px' }}></span>
+              </div>
+              <div>
+                <h1 style={{ fontSize: '1.3rem', fontWeight: 900, background: 'linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  REGALERÍA TINA
+                </h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <span>Enterprise System</span> • <span style={{ color: 'var(--color-accent)', fontWeight: 800 }}>{timeStr}</span>
+                </div>
+              </div>
+            </div>
+
+            <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', padding: '6px 8px', background: 'rgba(15,23,42,0.35)', borderRadius: 'var(--radius-full)', border: 'var(--glass-border)' }}>
+              <button className={`btn ${activeTab === 'pos' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('pos')} style={{ borderRadius: 'var(--radius-full)' }}>
+                <ShoppingBag /> Sector Ventas <span className="shortcut-badge">F2</span>
+              </button>
+              <button className={`btn ${activeTab === 'accounts' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('accounts')} style={{ borderRadius: 'var(--radius-full)' }}>
+                <Clock /> Cuentas Corrientes <span className="shortcut-badge">F3</span>
+                {(overdueCustomers || []).length > 0 && <span className="badge badge-danger" style={{ marginLeft: '4px' }}>{(overdueCustomers || []).length}</span>}
+              </button>
+              <button className={`btn ${activeTab === 'inventory' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('inventory')} style={{ borderRadius: 'var(--radius-full)' }}>
+                <Package /> Inventario
+                {(lowStockProducts || []).length > 0 && <span className="badge badge-warning" style={{ marginLeft: '4px' }}>{(lowStockProducts || []).length}</span>}
+              </button>
+              <button className={`btn ${activeTab === 'cash' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('cash')} style={{ borderRadius: 'var(--radius-full)' }}>
+                <Wallet /> Caja Diaria <span className="shortcut-badge">F4</span>
+                <span className={`badge ${isCashOpen ? 'badge-success' : 'badge-danger'}`} style={{ marginLeft: '4px' }}>{isCashOpen ? 'Abierta' : 'Cerrada'}</span>
+              </button>
+            </nav>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button type="button" className="btn btn-secondary" onClick={toggleTheme} style={{ color: theme === 'dark' ? '#fbbf24' : '#8b5cf6' }}>
+                {theme === 'dark' ? <Sun /> : <Moon />} {theme === 'dark' ? 'Claro' : 'Oscuro'}
+              </button>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.88rem', fontWeight: 700 }}>{user?.full_name || 'Usuario'}</div>
+                <span className={`badge ${isAdmin ? 'badge-primary' : 'badge-warning'}`}>{isAdmin ? 'Admin' : 'Cajero'}</span>
+              </div>
+              <button type="button" className="btn btn-primary" onClick={() => setActiveTab('users')} style={{ fontWeight: 800 }}>
+                <ShieldCheck /> Administrador
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={logout} style={{ color: '#ef4444', borderColor: 'rgba(239,68,68,0.4)' }}>
+                <LogOut /> Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </header>
+      );
+    }
+
+    function Login() {
+      const { login } = useAuth();
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [errorMsg, setErrorMsg] = useState('');
+
+      const handleLogin = (e) => { e.preventDefault(); setErrorMsg(''); try { login(email, password); } catch(err) { setErrorMsg(err.message); } };
+
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px 32px', textAlign: 'center' }}>
+            <img src="./public/logo.jpg" alt="Logo" style={{ width: '90px', height: '90px', borderRadius: '24px', objectFit: 'cover', border: '3px solid var(--color-primary)', marginBottom: '14px' }} />
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-primary)' }}>REGALERÍA TINA</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Gestor de Ventas, Caja & Cuentas Corrientes</p>
+            {errorMsg && <div style={{ color: '#f87171', background: 'rgba(239,68,68,0.15)', padding: '10px', borderRadius: '8px', marginBottom: '16px' }}>⚠️ {errorMsg}</div>}
+            <form onSubmit={handleLogin}>
+              <div className="form-group" style={{ textAlign: 'left' }}><label className="form-label">Correo Electrónico *</label><input type="email" className="form-control" required placeholder="correo@ejemplo.com" value={email} onChange={e => setEmail(e.target.value)} /></div>
+              <div className="form-group" style={{ textAlign: 'left' }}><label className="form-label">Contraseña *</label><input type="password" className="form-control" required placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} /></div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', marginBottom: '16px' }}><LogIn /> Iniciar Sesión</button>
+            </form>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', borderTop: 'var(--glass-border)', paddingTop: '16px' }}>
+              <button className="btn btn-secondary btn-sm" onClick={() => { setEmail('admin@regaleriatina.com'); setPassword('admin123'); }}>⚡ Cargar Demo Admin</button>
+              <button className="btn btn-secondary btn-sm" onClick={() => { setEmail('cajero@regaleriatina.com'); setPassword('cajero123'); }}>👤 Cargar Demo Cajero</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function Accounts() {
+      const { customers, sales = [], payments = [], overdueCustomers, addPayment, addCustomer, updateCustomer, deleteCustomer } = useData();
+      const [search, setSearch] = useState('');
+      const [showCustModal, setShowCustModal] = useState(false);
+      const [editingCust, setEditingCust] = useState(null);
+      const [custForm, setCustForm] = useState({ name: '', dni: '', address: '', phone: '' });
+      const [paymentCust, setPaymentCust] = useState(null);
+      const [payAmount, setPayAmount] = useState('');
+      const [payMethod, setPayMethod] = useState('Efectivo');
+      const [detailCust, setDetailCust] = useState(null);
+      const [timeFilter, setTimeFilter] = useState('all');
+      const [printSheetCust, setPrintSheetCust] = useState(null);
+
+      const activeCustomers = useMemo(() => customers.filter(c => c.id !== 'cust-ocasional'), [customers]);
+      const filteredCustomers = useMemo(() => activeCustomers.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || (c.dni && c.dni.includes(search))), [activeCustomers, search]);
+      const totalDebt = useMemo(() => activeCustomers.reduce((acc, c) => acc + (c.balance || 0), 0), [activeCustomers]);
+      const formatPrice = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(v || 0);
+
+      const formatDateTime = (v) => {
+        if (!v) return '-';
+        try {
+          const d = new Date(v);
+          if (isNaN(d.getTime())) return '-';
+          return `${d.toLocaleDateString('es-AR')} - ${d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs`;
+        } catch { return '-'; }
+      };
+
+      const isDateInFilter = (dateVal, filter) => {
+        if (filter === 'all' || !dateVal) return true;
+        const d = new Date(dateVal).getTime();
+        if (isNaN(d)) return false;
+        const now = Date.now();
+        const dayMs = 24 * 60 * 60 * 1000;
+        if (filter === 'today') {
+          const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+          return d >= todayStart.getTime();
+        } else if (filter === 'week') { return d >= (now - 7 * dayMs); }
+        else if (filter === 'month') { return d >= (now - 30 * dayMs); }
+        return true;
+      };
+
+      const openCustomerModal = (cust = null) => {
+        if (cust) { setEditingCust(cust); setCustForm({ name: cust.name, dni: cust.dni || '', address: cust.address || '', phone: cust.phone || '' }); }
+        else { setEditingCust(null); setCustForm({ name: '', dni: '', address: '', phone: '' }); }
+        setShowCustModal(true);
+      };
+
+      const handleSaveCustomer = (e) => {
+        e.preventDefault(); if (!custForm.name.trim()) return;
+        if (editingCust) updateCustomer(editingCust.id, custForm);
+        else addCustomer(custForm);
+        setShowCustModal(false);
+      };
+
+      const handleRegisterPayment = (e) => {
+        e.preventDefault(); if (!paymentCust || !payAmount) return;
+        addPayment(paymentCust.id, payAmount, payMethod, '');
+        setPaymentCust(null); setPayAmount('');
+      };
+
+      const filteredSalesForDetail = useMemo(() => {
+        if (!detailCust) return [];
+        return sales.filter(s => s.customerId === detailCust.id && s.paymentMethod === 'Cuenta Corriente' && isDateInFilter(s.created_at, timeFilter));
+      }, [sales, detailCust, timeFilter]);
+
+      const filteredPaymentsForDetail = useMemo(() => {
+        if (!detailCust) return [];
+        return payments.filter(p => p.customerId === detailCust.id && isDateInFilter(p.created_at, timeFilter));
+      }, [payments, detailCust, timeFilter]);
+
+      return (
+        <div style={{ maxWidth: '1400px', margin: '24px auto', padding: '0 20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+            <div className="glass-card" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ background: 'rgba(236,72,153,0.15)', color: '#ec4899', padding: '14px', borderRadius: '14px' }}><Users size={28} /></div>
+              <div><div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total Clientes</div><div style={{ fontSize: '1.8rem', fontWeight: 800 }}>{activeCustomers.length}</div></div>
+            </div>
+            <div className="glass-card" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ background: 'rgba(139,92,246,0.15)', color: '#8b5cf6', padding: '14px', borderRadius: '14px' }}><DollarSign size={28} /></div>
+              <div><div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total Deuda Cta. Cte.</div><div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ec4899' }}>{formatPrice(totalDebt)}</div></div>
+            </div>
+            <div className="glass-card" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ background: overdueCustomers.length > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)', color: overdueCustomers.length > 0 ? '#ef4444' : '#10b981', padding: '14px', borderRadius: '14px' }}><AlertTriangle size={28} /></div>
+              <div><div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Deudas +30 Días</div><div style={{ fontSize: '1.8rem', fontWeight: 800, color: overdueCustomers.length > 0 ? '#ef4444' : '#10b981' }}>{overdueCustomers.length}</div></div>
+            </div>
+          </div>
+
+          <div className="glass-card" style={{ padding: '20px 24px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <input type="text" className="form-control" style={{ maxWidth: '420px' }} placeholder="Buscar por Nombre, DNI, Teléfono..." value={search} onChange={e => setSearch(e.target.value)} />
+            <button className="btn btn-primary" onClick={() => openCustomerModal()}><UserPlus size={18} /> Cargar Nuevo Cliente</button>
+          </div>
+
+          <div className="table-responsive glass-card">
+            <table className="custom-table">
+              <thead><tr><th>Cliente</th><th>DNI</th><th>Domicilio</th><th>Teléfono</th><th>Saldo Adeudado</th><th style={{ textAlign: 'center' }}>Estado</th><th style={{ textAlign: 'center' }}>Acciones</th></tr></thead>
+              <tbody>
+                {filteredCustomers.map(cust => (
+                  <tr key={cust.id}>
+                    <td><strong>{cust.name}</strong></td>
+                    <td>{cust.dni||'-'}</td>
+                    <td>{cust.address||'-'}</td>
+                    <td>{cust.phone||'-'}</td>
+                    <td style={{ fontWeight: 800, color: cust.balance > 0 ? '#ec4899' : '#10b981' }}>{formatPrice(cust.balance||0)}</td>
+                    <td style={{ textAlign: 'center' }}><span className={`badge ${cust.balance > 0 ? 'badge-warning' : 'badge-success'}`}>{cust.balance > 0 ? 'Pendiente' : 'Al Día'}</span></td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
+                        <button className="btn btn-success btn-sm" disabled={cust.balance <= 0} onClick={() => { setPaymentCust(cust); setPayAmount(cust.balance); }}><DollarSign size={15} /> Cobrar</button>
+                        <button className="btn btn-secondary btn-sm" onClick={() => { setDetailCust(cust); setTimeFilter('all'); }}><Eye size={15} /> Historial</button>
+                        <button className="btn btn-secondary btn-sm" onClick={() => setPrintSheetCust(cust)}><Printer size={15} /> Ficha</button>
+                        <button className="btn btn-secondary btn-sm" onClick={() => openCustomerModal(cust)}><Edit2 size={15} /></button>
+                        <button className="btn btn-secondary btn-sm" style={{ color: '#ef4444' }} onClick={() => deleteCustomer(cust.id)}><Trash2 size={15} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {showCustModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header"><h3>{editingCust ? 'Editar Cliente' : 'Nuevo Cliente'}</h3><button className="btn btn-secondary btn-sm" onClick={() => setShowCustModal(false)}>✕</button></div>
+                <form onSubmit={handleSaveCustomer}>
+                  <div className="modal-body">
+                    <div className="form-group"><label className="form-label">Nombre *</label><input type="text" className="form-control" required value={custForm.name} onChange={e => setCustForm({ ...custForm, name: e.target.value })} /></div>
+                    <div className="form-group"><label className="form-label">DNI *</label><input type="text" className="form-control" required value={custForm.dni} onChange={e => setCustForm({ ...custForm, dni: e.target.value })} /></div>
+                    <div className="form-group"><label className="form-label">Domicilio *</label><input type="text" className="form-control" required value={custForm.address} onChange={e => setCustForm({ ...custForm, address: e.target.value })} /></div>
+                    <div className="form-group"><label className="form-label">Teléfono *</label><input type="tel" className="form-control" required value={custForm.phone} onChange={e => setCustForm({ ...custForm, phone: e.target.value })} /></div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowCustModal(false)}>Cancelar</button>
+                    <button type="submit" className="btn btn-primary">Guardar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {paymentCust && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '480px' }}>
+                <div className="modal-header"><h3>Abonar / Entregar Dinero</h3><button className="btn btn-secondary btn-sm" onClick={() => setPaymentCust(null)}>✕</button></div>
+                <form onSubmit={handleRegisterPayment}>
+                  <div className="modal-body">
+                    <p>Cliente: <strong>{paymentCust.name}</strong></p>
+                    <p style={{ marginBottom: '14px' }}>Saldo: <strong style={{ color: '#ec4899' }}>{formatPrice(paymentCust.balance)}</strong></p>
+                    <div className="form-group"><label className="form-label">Monto ($) *</label><input type="number" step="any" className="form-control" required value={payAmount} onChange={e => setPayAmount(e.target.value)} /></div>
+                    <div className="form-group"><label className="form-label">Medio de Pago</label><select className="form-control" value={payMethod} onChange={e => setPayMethod(e.target.value)}><option value="Efectivo">Efectivo</option><option value="Transferencia">Transferencia</option><option value="Tarjeta">Tarjeta</option></select></div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setPaymentCust(null)}>Cancelar</button>
+                    <button type="submit" className="btn btn-success">Confirmar Abono</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {detailCust && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '820px' }}>
+                <div className="modal-header">
+                  <h3>Historial Detallado: {detailCust.name}</h3>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setDetailCust(null)}>✕</button>
+                </div>
+                <div className="modal-body">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', background: 'var(--bg-primary)', padding: '14px', borderRadius: '10px' }}>
+                    <div>DNI: {detailCust.dni||'-'} | Tel: {detailCust.phone||'-'}</div>
+                    <div>Saldo: <strong style={{ color: '#ec4899', fontSize: '1.2rem' }}>{formatPrice(detailCust.balance)}</strong></div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                    <button className={`btn btn-sm ${timeFilter === 'today' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setTimeFilter('today')}>📅 Hoy</button>
+                    <button className={`btn btn-sm ${timeFilter === 'week' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setTimeFilter('week')}>🗓️ Esta Semana</button>
+                    <button className={`btn btn-sm ${timeFilter === 'month' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setTimeFilter('month')}>📆 Este Mes</button>
+                    <button className={`btn btn-sm ${timeFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setTimeFilter('all')}>📜 Todos</button>
+                  </div>
+
+                  <h4 style={{ color: '#ec4899', marginBottom: '8px' }}>🛒 Compras a Crédito (Fecha y Hora Exacta)</h4>
+                  <div className="table-responsive" style={{ marginBottom: '16px' }}>
+                    <table className="custom-table">
+                      <thead><tr><th>Fecha & Hora</th><th>Ticket #</th><th>Detalle Artículos</th><th>Total</th></tr></thead>
+                      <tbody>
+                        {filteredSalesForDetail.length === 0 ? (
+                          <tr><td colSpan="4" style={{ textAlign: 'center', padding: '16px', color: 'var(--text-muted)' }}>Sin compras en este período.</td></tr>
+                        ) : (
+                          filteredSalesForDetail.map(s => (
+                            <tr key={s.id}>
+                              <td style={{ fontSize: '0.85rem', color: '#06b6d4', fontWeight: 700 }}>{formatDateTime(s.created_at)}</td>
+                              <td>#{s.id}</td>
+                              <td>{s.items ? s.items.map(i => `${i.quantity}x ${i.name}`).join(', ') : '-'}</td>
+                              <td style={{ fontWeight: 800 }}>{formatPrice(s.total)}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h4 style={{ color: '#10b981', marginBottom: '8px' }}>💵 Entregas / Abonos</h4>
+                  <div className="table-responsive">
+                    <table className="custom-table">
+                      <thead><tr><th>Fecha & Hora</th><th>Medio</th><th>Monto</th></tr></thead>
+                      <tbody>
+                        {filteredPaymentsForDetail.length === 0 ? (
+                          <tr><td colSpan="3" style={{ textAlign: 'center', padding: '16px', color: 'var(--text-muted)' }}>Sin abonos en este período.</td></tr>
+                        ) : (
+                          filteredPaymentsForDetail.map(p => (
+                            <tr key={p.id}>
+                              <td style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 700 }}>{formatDateTime(p.created_at)}</td>
+                              <td>{p.paymentMethod}</td>
+                              <td style={{ fontWeight: 800, color: '#10b981' }}>{formatPrice(p.amount)}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={() => setPrintSheetCust(detailCust)}><Printer size={16} /> Imprimir Ficha</button>
+                  <button className="btn btn-primary" onClick={() => setDetailCust(null)}>Cerrar</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {printSheetCust && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '650px' }}>
+                <div className="modal-header"><h3>Ficha Resumen de Cuenta Corriente</h3><button className="btn btn-secondary btn-sm" onClick={() => setPrintSheetCust(null)}>✕</button></div>
+                <div className="modal-body">
+                  <div className="receipt-box">
+                    <div style={{ textAlign: 'center', borderBottom: '2px solid #0f172a', paddingBottom: '10px', marginBottom: '14px' }}>
+                      <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#0f172a' }}>REGALERÍA TINA</h2>
+                      <p style={{ fontSize: '0.8rem', color: '#475569' }}>ESTADO DE CUENTA CORRIENTE CLIENTE</p>
+                      <p style={{ fontSize: '0.75rem', color: '#64748b' }}>Fecha: {new Date().toLocaleString()}</p>
+                    </div>
+                    <p><strong>Cliente:</strong> {printSheetCust.name} | <strong>DNI:</strong> {printSheetCust.dni||'-'}</p>
+                    <p><strong>Domicilio:</strong> {printSheetCust.address||'-'} | <strong>Tel:</strong> {printSheetCust.phone||'-'}</p>
+                    <p style={{ marginTop: '10px', fontSize: '1.2rem', fontWeight: 900 }}>Saldo Deudor: {formatPrice(printSheetCust.balance)}</p>
+                  </div>
+                </div>
+                <div className="modal-footer" style={{ justifyContent: 'center' }}>
+                  <button className="btn btn-primary" onClick={() => window.print()}><Printer size={16} /> Imprimir / PDF</button>
+                  <button className="btn btn-secondary" onClick={() => setPrintSheetCust(null)}>Cerrar</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    function Inventory() {
+      const { products, categories, addCategory, brands = [], addBrand, deleteBrand, addProduct, updateProduct, deleteProduct, adjustProductStock } = useData();
+      const [search, setSearch] = useState('');
+      const [selectedBrand, setSelectedBrand] = useState('ALL');
+      const [showModal, setShowModal] = useState(false);
+      const [showBrandManagerModal, setShowBrandManagerModal] = useState(false);
+      const [newBrandInput, setNewBrandInput] = useState('');
+      const [labelProduct, setLabelProduct] = useState(null);
+      const [editingProd, setEditingProd] = useState(null);
+      const [form, setForm] = useState({ 
+        name: '', 
+        brand: '', 
+        brandMode: 'SELECT',
+        customBrand: '',
+        category: '', 
+        categoryMode: 'SELECT',
+        customCategory: '',
+        barcode: '',
+        variantCode: '01',
+        costPrice: '', 
+        sellPrice: '', 
+        stock: '1', 
+        minStock: '3' 
+      });
+      const formatPrice = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(v);
+
+      const duplicateProd = useMemo(() => {
+        const codeToTest = (form.barcode || '').trim().toUpperCase();
+        if (!codeToTest) return null;
+        return products.find(p => 
+          p.barcode && 
+          p.barcode.trim().toUpperCase() === codeToTest && 
+          (!editingProd || p.id !== editingProd.id)
+        );
+      }, [form.barcode, products, editingProd]);
+
+      const suggestedAlternativeCode = useMemo(() => {
+        if (!duplicateProd) return '';
+        const currentCat = form.categoryMode === 'CUSTOM' ? form.customCategory : form.category;
+        return generateAutoCode(currentCat, products, form.name, form.variantCode, editingProd ? editingProd.id : null);
+      }, [duplicateProd, form.category, form.categoryMode, form.customCategory, form.name, form.variantCode, products, editingProd]);
+
+      const openModal = (p = null) => {
+        if (p) { 
+          setEditingProd(p); 
+          let variant = '01';
+          if (p.barcode && p.barcode.includes('-')) {
+            const parts = p.barcode.split('-');
+            if (parts.length >= 3) variant = parts[1];
+          }
+          setForm({ 
+            name: p.name, 
+            brand: p.brand || '', 
+            brandMode: 'SELECT',
+            customBrand: '',
+            category: p.category || '', 
+            categoryMode: 'SELECT',
+            customCategory: '',
+            barcode: p.barcode || '', 
+            variantCode: variant,
+            costPrice: p.costPrice !== undefined ? String(p.costPrice) : '', 
+            sellPrice: p.sellPrice !== undefined ? String(p.sellPrice) : '', 
+            stock: p.stock !== undefined ? String(p.stock) : '1', 
+            minStock: p.minStock !== undefined ? String(p.minStock) : '3' 
+          }); 
+        } else { 
+          setEditingProd(null); 
+          const defaultCat = categories.length > 0 ? categories[0] : 'Bijouterie';
+          const autoCode = generateAutoCode(defaultCat, products, '', '01');
+          setForm({ 
+            name: '', 
+            brand: '', 
+            brandMode: 'SELECT',
+            customBrand: '',
+            category: defaultCat, 
+            categoryMode: 'SELECT',
+            customCategory: '',
+            barcode: autoCode, 
+            variantCode: '01',
+            costPrice: '', 
+            sellPrice: '', 
+            stock: '1', 
+            minStock: '3' 
+          }); 
+        }
+        setShowModal(true);
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault(); 
+        if (!form.name.trim()) {
+          alert('Por favor ingrese el Nombre Comercial del producto.');
+          return;
+        }
+        if (!form.sellPrice || isNaN(parseFloat(form.sellPrice))) {
+          alert('Por favor ingrese un Precio de Venta válido.');
+          return;
+        }
+
+        // Marca final
+        let finalBrand = form.brandMode === 'CUSTOM' ? form.customBrand.trim() : form.brand.trim();
+        if (!finalBrand) finalBrand = 'Sin Marca';
+
+        if (finalBrand !== 'Sin Marca' && !brands.includes(finalBrand) && addBrand) {
+          addBrand(finalBrand);
+        }
+
+        // Categoría / Rubro final
+        let finalCategory = form.categoryMode === 'CUSTOM' ? form.customCategory.trim() : form.category.trim();
+        if (!finalCategory) finalCategory = 'General';
+
+        if (finalCategory !== 'General' && !categories.includes(finalCategory) && addCategory) {
+          addCategory(finalCategory);
+        }
+
+        let finalBarcode = form.barcode.trim().toUpperCase();
+        if (!finalBarcode) {
+          finalBarcode = generateAutoCode(finalCategory, products, form.name.trim(), form.variantCode, editingProd ? editingProd.id : null);
+        }
+
+        const existingDuplicate = products.find(p => 
+          p.barcode && 
+          p.barcode.trim().toUpperCase() === finalBarcode && 
+          (!editingProd || p.id !== editingProd.id)
+        );
+
+        if (existingDuplicate) {
+          const alt = generateAutoCode(finalCategory, products, form.name.trim(), form.variantCode, editingProd ? editingProd.id : null);
+          alert(`⚠️ El código "${finalBarcode}" ya está registrado para el producto "${existingDuplicate.name}".\n\nSe asignó automáticamente el código sugerido disponible: "${alt}".`);
+          finalBarcode = alt;
+          setForm(f => ({ ...f, barcode: alt }));
+        }
+
+        const payload = { 
+          name: form.name.trim(),
+          brand: finalBrand, 
+          category: finalCategory,
+          barcode: finalBarcode,
+          costPrice: form.costPrice !== '' ? parseFloat(form.costPrice) : 0,
+          sellPrice: parseFloat(form.sellPrice),
+          stock: form.stock !== '' && !isNaN(parseInt(form.stock)) ? parseInt(form.stock) : 1,
+          minStock: form.minStock !== '' && !isNaN(parseInt(form.minStock)) ? parseInt(form.minStock) : 3
+        };
+
+        if (editingProd) updateProduct(editingProd.id, payload);
+        else addProduct(payload);
+        setShowModal(false);
+      };
+
+      const filteredProducts = useMemo(() => {
+        const term = search.trim().toLowerCase();
+        if (!term) return products.filter(p => selectedBrand === 'ALL' || (p.brand || 'Sin Marca') === selectedBrand);
+        const cleanTerm = term.replace(/[^a-z0-9]/g, '');
+
+        return products.filter(p => {
+          const codeLower = (p.barcode || '').toLowerCase();
+          const cleanCode = codeLower.replace(/[^a-z0-9]/g, '');
+
+          const matchCode = codeLower.includes(term) || (cleanCode && cleanCode.includes(cleanTerm));
+          const matchName = p.name.toLowerCase().includes(term);
+          const matchCategory = p.category.toLowerCase().includes(term);
+          const matchBrand = p.brand && p.brand.toLowerCase().includes(term);
+
+          const matchSearch = matchCode || matchName || matchCategory || matchBrand;
+          const matchBrandSel = selectedBrand === 'ALL' || (p.brand || 'Sin Marca') === selectedBrand;
+          return matchSearch && matchBrandSel;
+        });
+      }, [products, search, selectedBrand]);
+
+      return (
+        <div style={{ maxWidth: '1400px', margin: '24px auto', padding: '0 20px' }}>
+          <div className="glass-card" style={{ padding: '20px 24px', marginBottom: '24px', display: 'flex', gap: '14px', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', flex: 1, minWidth: '300px' }}>
+              <input type="text" className="form-control" style={{ flex: 1 }} placeholder="Buscar por nombre, marca, código de producto o categoría..." value={search} onChange={e => setSearch(e.target.value)} />
+              <select className="form-control" value={selectedBrand} onChange={e => setSelectedBrand(e.target.value)} style={{ width: 'auto', fontWeight: 800 }}>
+                <option value="ALL">🏷️ Todas las Marcas</option>
+                {brands.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn btn-secondary" onClick={() => setShowBrandManagerModal(true)} style={{ borderRadius: 'var(--radius-full)', fontWeight: 800 }}>⚙️ Gestionar Marcas</button>
+              <button className="btn btn-primary" onClick={() => openModal()} style={{ borderRadius: 'var(--radius-full)', fontWeight: 900 }}>+ Nuevo Producto</button>
+            </div>
+          </div>
+
+          <div className="table-responsive glass-card">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Marca</th>
+                  <th>Categoría</th>
+                  <th>Código de Producto</th>
+                  <th>Costo</th>
+                  <th>Precio Venta</th>
+                  <th>Stock</th>
+                  <th style={{ textAlign: 'right' }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.length === 0 ? (
+                  <tr><td colSpan="8" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>No se encontraron productos.</td></tr>
+                ) : (
+                  filteredProducts.map(p => (
+                    <tr key={p.id}>
+                      <td style={{ fontWeight: 800, color: '#fff' }}>{p.name}</td>
+                      <td><span style={{ background: 'rgba(236, 72, 153, 0.15)', color: '#ec4899', padding: '3px 10px', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', fontWeight: 800 }}>🏷️ {p.brand || 'Sin Marca'}</span></td>
+                      <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{p.category}</td>
+                      <td>
+                        <span style={{ 
+                          background: 'rgba(139, 92, 246, 0.15)', 
+                          color: '#c4b5fd', 
+                          padding: '4px 10px', 
+                          borderRadius: '8px', 
+                          fontSize: '0.85rem', 
+                          fontFamily: 'monospace', 
+                          fontWeight: 900,
+                          border: '1px solid rgba(139, 92, 246, 0.3)',
+                          letterSpacing: '0.05em'
+                        }}>
+                          {p.barcode && !p.barcode.startsWith('prod-') ? p.barcode : generateAutoCode(p.category, products, p.name)}
+                        </span>
+                      </td>
+                      <td>{formatPrice(p.costPrice || 0)}</td>
+                      <td style={{ fontWeight: 900, color: 'var(--color-primary)' }}>{formatPrice(p.sellPrice || 0)}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className={`badge ${p.stock <= 0 ? 'badge-danger' : p.stock <= p.minStock ? 'badge-warning' : 'badge-success'}`} style={{ fontSize: '0.85rem', fontWeight: 900, minWidth: '85px', textAlign: 'center' }}>
+                            {p.stock <= 0 ? 'Agotado (0)' : `Stock: ${p.stock}`}
+                          </span>
+                          <div style={{ display: 'flex', gap: '3px' }}>
+                            <button 
+                              type="button" 
+                              className="btn btn-secondary btn-sm" 
+                              onClick={() => adjustProductStock(p.id, -1)}
+                              disabled={p.stock <= 0}
+                              title="Restar 1 unidad"
+                              style={{ padding: '3px 7px', fontSize: '0.78rem', fontWeight: 900, borderRadius: '6px' }}
+                            >
+                              -1
+                            </button>
+                            <button 
+                              type="button" 
+                              className="btn btn-secondary btn-sm" 
+                              onClick={() => adjustProductStock(p.id, 1)}
+                              title="Sumar 1 unidad"
+                              style={{ padding: '3px 7px', fontSize: '0.78rem', fontWeight: 900, borderRadius: '6px', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)', background: 'rgba(16, 185, 129, 0.1)' }}
+                            >
+                              +1
+                            </button>
+                            <button 
+                              type="button" 
+                              className="btn btn-secondary btn-sm" 
+                              onClick={() => adjustProductStock(p.id, 5)}
+                              title="Sumar 5 unidades"
+                              style={{ padding: '3px 7px', fontSize: '0.78rem', fontWeight: 900, borderRadius: '6px', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.4)', background: 'rgba(245, 158, 11, 0.1)' }}
+                            >
+                              +5
+                            </button>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button className="btn btn-secondary btn-sm" onClick={() => openModal(p)} style={{ marginRight: '6px' }}>Editar</button>
+                        <button className="btn btn-secondary btn-sm" onClick={() => deleteProduct(p.id)} style={{ color: '#ef4444' }}>Eliminar</button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* MODAL GESTIÓN DE MARCAS */}
+          {showBrandManagerModal && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '520px', borderRadius: '20px' }}>
+                <div className="modal-header">
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: '#fff' }}>🏷️ Gestión de Marcas del Catálogo</h3>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setShowBrandManagerModal(false)}>✕</button>
+                </div>
+                <div className="modal-body" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <form onSubmit={e => {
+                    e.preventDefault();
+                    if (newBrandInput.trim()) {
+                      addBrand(newBrandInput.trim());
+                      setNewBrandInput('');
+                    }
+                  }} style={{ display: 'flex', gap: '10px' }}>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      placeholder="Escriba nueva marca (ej. Care, Pink 365...)" 
+                      value={newBrandInput} 
+                      onChange={e => setNewBrandInput(e.target.value)}
+                      style={{ fontWeight: 700 }}
+                    />
+                    <button type="submit" className="btn btn-primary" style={{ whiteSpace: 'nowrap', borderRadius: 'var(--radius-full)' }}>+ Agregar</button>
+                  </form>
+
+                  <div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+                      Marcas Registradas en el Catálogo ({brands.length})
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', maxHeight: '280px', overflowY: 'auto', padding: '16px', background: 'var(--bg-primary)', borderRadius: '16px', border: 'var(--glass-border)' }}>
+                      {brands.map(b => (
+                        <div 
+                          key={b} 
+                          style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            gap: '8px', 
+                            background: 'rgba(236, 72, 153, 0.14)', 
+                            border: '1px solid rgba(236, 72, 153, 0.3)', 
+                            color: '#fff', 
+                            padding: '6px 14px', 
+                            borderRadius: 'var(--radius-full)', 
+                            fontSize: '0.88rem', 
+                            fontWeight: 800 
+                          }}
+                        >
+                          <span>🏷️ {b}</span>
+                          {b !== 'Sin Marca' && (
+                            <button 
+                              type="button" 
+                              onClick={() => {
+                                if (window.confirm(`¿Seguro que deseas eliminar la marca "${b}" del catálogo?`)) {
+                                  deleteBrand(b);
+                                }
+                              }} 
+                              style={{ 
+                                background: 'rgba(239, 68, 68, 0.25)', 
+                                border: 'none', 
+                                color: '#f87171', 
+                                borderRadius: '50%', 
+                                width: '22px', 
+                                height: '22px', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                cursor: 'pointer' 
+                              }}
+                              title="Eliminar esta marca"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer" style={{ padding: '16px 26px' }}>
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowBrandManagerModal(false)} style={{ borderRadius: 'var(--radius-full)' }}>Cerrar</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL NUEVO / EDITAR PRODUCTO */}
+          {showModal && (
+            <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
+              <div className="modal-content" style={{ maxWidth: '680px', width: '100%', maxHeight: '90vh', borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--bg-secondary)', border: '1px solid rgba(255,255,255,0.15)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)' }}>
+                <div className="modal-header" style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2))', padding: '18px 24px', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                      {editingProd ? <Edit2 size={20} /> : <Package size={20} />}
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', margin: 0 }}>
+                        {editingProd ? '✏️ Modificar Producto del Catálogo' : '✨ Agregar Nuevo Producto'}
+                      </h3>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
+                        {editingProd ? 'Edite los precios, marcas o código del producto.' : 'Complete la información comercial y código para ingresarlo al sistema.'}
+                      </p>
+                    </div>
+                  </div>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setShowModal(false)} style={{ borderRadius: '50%', width: '36px', height: '36px', padding: 0 }}>✕</button>
+                </div>
+
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', margin: 0 }}>
+                  <div className="modal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px', overflowY: 'auto', flex: 1 }}>
+                    
+                    {/* 1. NOMBRE DEL PRODUCTO */}
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label" style={{ fontWeight: 800 }}>Nombre Comercial del Producto *</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        required 
+                        value={form.name} 
+                        onChange={e => {
+                          const newName = e.target.value;
+                          const currentCat = form.categoryMode === 'CUSTOM' ? form.customCategory : form.category;
+                          const autoCode = generateAutoCode(currentCat, products, newName, form.variantCode);
+                          setForm({ ...form, name: newName, barcode: autoCode });
+                        }} 
+                        placeholder="Ej. Cartera Bandolera Eco-Cuero Suave con Cierre" 
+                        style={{ fontSize: '1rem', fontWeight: 700 }} 
+                      />
+                    </div>
+
+                    {/* 2. MARCA DEL PRODUCTO */}
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label" style={{ color: '#ec4899', fontWeight: 800 }}>🏷️ Marca del Producto</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <select 
+                          className="form-control" 
+                          value={form.brandMode === 'CUSTOM' ? 'CUSTOM' : form.brand} 
+                          onChange={e => {
+                            if (e.target.value === 'CUSTOM') {
+                              setForm({ ...form, brandMode: 'CUSTOM', customBrand: '' });
+                            } else {
+                              setForm({ ...form, brandMode: 'SELECT', brand: e.target.value, customBrand: '' });
+                            }
+                          }}
+                          style={{ fontWeight: 800, fontSize: '0.95rem' }}
+                        >
+                          <option value="">-- Seleccionar Marca de la Lista --</option>
+                          <option value="Sin Marca">Sin Marca</option>
+                          {brands.filter(b => b !== 'Sin Marca').map(b => <option key={b} value={b}>{b}</option>)}
+                          <option value="CUSTOM">➕ Escribir / Crear Nueva Marca...</option>
+                        </select>
+
+                        {form.brandMode === 'CUSTOM' && (
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            style={{ borderColor: 'var(--color-primary)', fontWeight: 700 }} 
+                            value={form.customBrand} 
+                            onChange={e => setForm({ ...form, customBrand: e.target.value })} 
+                            placeholder="Escriba el nombre de la nueva marca..." 
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 3. CATEGORÍA / RUBRO */}
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label" style={{ color: '#8b5cf6', fontWeight: 800 }}>📂 Categoría / Rubro *</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <select 
+                          className="form-control" 
+                          value={form.categoryMode === 'CUSTOM' ? 'CUSTOM' : form.category} 
+                          onChange={e => {
+                            const selectedCat = e.target.value;
+                            if (selectedCat === 'CUSTOM') {
+                              setForm({ ...form, categoryMode: 'CUSTOM', customCategory: '' });
+                            } else {
+                              const autoCode = generateAutoCode(selectedCat, products, form.name, form.variantCode);
+                              setForm({ ...form, categoryMode: 'SELECT', category: selectedCat, customCategory: '', barcode: autoCode });
+                            }
+                          }}
+                          style={{ fontWeight: 700, fontSize: '0.95rem' }}
+                        >
+                          <option value="">-- Seleccionar Categoría / Rubro de la Lista --</option>
+                          {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                          <option value="CUSTOM">➕ Escribir / Crear Nueva Categoría...</option>
+                        </select>
+
+                        {form.categoryMode === 'CUSTOM' && (
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            style={{ borderColor: '#8b5cf6', fontWeight: 700 }} 
+                            value={form.customCategory} 
+                            onChange={e => {
+                              const customCat = e.target.value;
+                              const autoCode = generateAutoCode(customCat, products, form.name, form.variantCode);
+                              setForm({ ...form, customCategory: customCat, barcode: autoCode });
+                            }} 
+                            placeholder="Escriba la nueva categoría o rubro..." 
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 4. PANEL DE CÓDIGO DE PRODUCTO / SKU INTUITIVO */}
+                    <div style={{
+                      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(236, 72, 153, 0.08))',
+                      padding: '16px',
+                      borderRadius: '16px',
+                      border: '1px solid rgba(139, 92, 246, 0.3)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label className="form-label" style={{ color: '#c4b5fd', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          🏷️ Panel de Código de Producto & SKU Intuitivo
+                        </label>
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(139, 92, 246, 0.2)', color: '#ddd6fe', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}>
+                          Auto-Generado Intuitivo
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+                        <div>
+                          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800, display: 'block', marginBottom: '4px' }}>
+                            Código de Producto (Modificable)
+                          </label>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            style={{ 
+                              fontFamily: 'monospace', 
+                              fontWeight: 900, 
+                              fontSize: '1.1rem', 
+                              color: '#a78bfa', 
+                              borderColor: 'rgba(139, 92, 246, 0.5)',
+                              background: 'rgba(15, 23, 42, 0.6)' 
+                            }} 
+                            value={form.barcode} 
+                            onChange={e => setForm({ ...form, barcode: e.target.value.toUpperCase() })} 
+                            placeholder="Ej. MB-01-0001" 
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800, display: 'block', marginBottom: '4px' }}>
+                            Variante / Sub-Código
+                          </label>
+                          <select 
+                            className="form-control"
+                            value={form.variantCode}
+                            onChange={e => {
+                              const newVar = e.target.value;
+                              const cat = form.categoryMode === 'CUSTOM' ? form.customCategory : form.category;
+                              const newCode = generateAutoCode(cat, products, form.name, newVar);
+                              setForm({ ...form, variantCode: newVar, barcode: newCode });
+                            }}
+                            style={{ fontWeight: 800, fontFamily: 'monospace' }}
+                          >
+                            <option value="01">01 - Estándar</option>
+                            <option value="02">02 - Variante</option>
+                            <option value="03">03 - Edición 3</option>
+                            <option value="04">04 - Edición 4</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {duplicateProd && (
+                        <div style={{ 
+                          background: 'rgba(239, 68, 68, 0.15)', 
+                          border: '1px solid rgba(239, 68, 68, 0.4)', 
+                          borderRadius: '10px', 
+                          padding: '10px 14px', 
+                          display: 'flex', 
+                          flexDirection: 'column', 
+                          gap: '8px' 
+                        }}>
+                          <div style={{ fontSize: '0.82rem', color: '#f87171', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <AlertTriangle size={16} />
+                            <span>¡Atención! El código <strong>{form.barcode.toUpperCase()}</strong> ya está registrado para: <strong>"{duplicateProd.name}"</strong>.</span>
+                          </div>
+
+                          {suggestedAlternativeCode && (
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => setForm({ ...form, barcode: suggestedAlternativeCode })}
+                              style={{
+                                background: 'rgba(16, 185, 129, 0.15)',
+                                color: '#34d399',
+                                borderColor: 'rgba(16, 185, 129, 0.4)',
+                                fontWeight: 900,
+                                fontSize: '0.8rem',
+                                borderRadius: '8px',
+                                alignSelf: 'flex-start'
+                              }}
+                            >
+                              💡 Usar código disponible sugerido: <strong>{suggestedAlternativeCode}</strong>
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)', padding: '8px 12px', borderRadius: '10px' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#ddd6fe' }}>
+                          Sigla: <strong>{getCategoryPrefix(form.categoryMode === 'CUSTOM' ? form.customCategory : form.category, form.name)}</strong> (Categoría + Sub-tipo)
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => {
+                            const cat = form.categoryMode === 'CUSTOM' ? form.customCategory : form.category;
+                            const newCode = generateAutoCode(cat, products, form.name, form.variantCode, editingProd ? editingProd.id : null);
+                            setForm({ ...form, barcode: newCode });
+                          }}
+                          style={{ fontSize: '0.75rem', fontWeight: 800, color: '#c4b5fd', borderColor: 'rgba(139, 92, 246, 0.4)' }}
+                        >
+                          ⚡ Regenerar Intuitivo
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 5. PRECIOS Y GANANCIA */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ fontWeight: 800 }}>Precio Costo ($)</label>
+                        <input 
+                          type="number" 
+                          step="any" 
+                          min="0"
+                          className="form-control" 
+                          value={form.costPrice} 
+                          onChange={e => setForm({ ...form, costPrice: e.target.value })} 
+                          placeholder="Ej. 9500" 
+                          style={{ fontSize: '1.05rem', fontWeight: 800 }} 
+                        />
+                      </div>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ fontWeight: 800, color: 'var(--color-primary)' }}>Precio Venta Público ($) *</label>
+                        <input 
+                          type="number" 
+                          step="any" 
+                          min="0"
+                          className="form-control" 
+                          value={form.sellPrice} 
+                          onChange={e => setForm({ ...form, sellPrice: e.target.value })} 
+                          placeholder="Ej. 21900" 
+                          style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--color-primary)' }} 
+                        />
+                      </div>
+                    </div>
+
+                    {/* CALCULADORA DE MARGEN EN TIEMPO REAL */}
+                    {(() => {
+                      const c = parseFloat(form.costPrice) || 0;
+                      const v = parseFloat(form.sellPrice) || 0;
+                      const profit = v - c;
+                      const margin = c > 0 ? Math.round((profit / c) * 100) : 0;
+                      return (
+                        <div style={{ background: profit >= 0 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: profit >= 0 ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: profit >= 0 ? '#10b981' : '#ef4444', fontWeight: 800 }}>Ganancia estimada por unidad: <strong>{formatPrice(profit)}</strong></span>
+                          <span style={{ background: profit >= 0 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: profit >= 0 ? '#34d399' : '#f87171', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 900 }}>{margin}% Margen</span>
+                        </div>
+                      );
+                    })()}
+
+                    {/* 6. CANTIDAD DE PRODUCTOS Y CONTROL DE STOCK (JUSTO DEBAJO DE PRECIOS) */}
+                    <div style={{ 
+                      background: 'rgba(245, 158, 11, 0.08)', 
+                      padding: '16px 18px', 
+                      borderRadius: '16px', 
+                      border: '2px solid rgba(245, 158, 11, 0.4)',
+                      boxShadow: '0 6px 20px rgba(245, 158, 11, 0.1)'
+                    }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Package size={18} /> 6. Cantidad de Productos en Stock
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                          <div className="form-group" style={{ margin: 0 }}>
+                            <label className="form-label" style={{ fontWeight: 900, color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              📦 Cantidad de Stock (Unidades) *
+                            </label>
+
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <button 
+                                type="button" 
+                                className="btn btn-secondary" 
+                                onClick={() => {
+                                  const current = parseInt(form.stock, 10) || 0;
+                                  setForm({ ...form, stock: String(Math.max(0, current - 1)) });
+                                }}
+                                style={{ width: '38px', height: '38px', borderRadius: '10px', fontWeight: 900, fontSize: '1.1rem', padding: 0 }}
+                              >
+                                -
+                              </button>
+                              <input 
+                                type="number" 
+                                min="0" 
+                                className="form-control" 
+                                required 
+                                value={form.stock} 
+                                onChange={e => setForm({ ...form, stock: e.target.value })} 
+                                placeholder="Ej. 1, 5, 10..." 
+                                style={{ flex: 1, fontSize: '1.2rem', fontWeight: 900, borderColor: '#f59e0b', color: '#fbbf24', background: 'rgba(15, 23, 42, 0.85)', textAlign: 'center' }} 
+                              />
+                              <button 
+                                type="button" 
+                                className="btn btn-secondary" 
+                                onClick={() => {
+                                  const current = parseInt(form.stock, 10) || 0;
+                                  setForm({ ...form, stock: String(current + 1) });
+                                }}
+                                style={{ width: '38px', height: '38px', borderRadius: '10px', fontWeight: 900, fontSize: '1.1rem', padding: 0, color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="form-group" style={{ margin: 0 }}>
+                            <label className="form-label" style={{ fontWeight: 800 }}>⚠️ Stock Mínimo (Alerta)</label>
+                            <input 
+                              type="number" 
+                              min="0" 
+                              className="form-control" 
+                              value={form.minStock} 
+                              onChange={e => setForm({ ...form, minStock: e.target.value })} 
+                              placeholder="Ej. 3" 
+                              style={{ fontSize: '1.05rem', fontWeight: 800 }} 
+                            />
+                          </div>
+                        </div>
+
+                        {/* BOTONES RÁPIDOS PARA SUMAR/CARGAR CANTIDAD */}
+                        <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800, marginBottom: '6px', textTransform: 'uppercase' }}>
+                            ⚡ Carga Rápida de Unidades:
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {[1, 5, 10, 20, 50, 100].map(addVal => (
+                              <button
+                                key={addVal}
+                                type="button"
+                                className="btn btn-secondary btn-sm"
+                                onClick={() => {
+                                  const current = parseInt(form.stock, 10) || 0;
+                                  setForm({ ...form, stock: String(current + addVal) });
+                                }}
+                                style={{ 
+                                  borderRadius: 'var(--radius-full)', 
+                                  fontWeight: 800, 
+                                  fontSize: '0.78rem',
+                                  padding: '3px 9px',
+                                  borderColor: 'rgba(245, 158, 11, 0.35)',
+                                  color: '#f59e0b',
+                                  background: 'rgba(245, 158, 11, 0.12)'
+                                }}
+                              >
+                                +{addVal} u.
+                              </button>
+                            ))}
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => setForm({ ...form, stock: '0' })}
+                              style={{ borderRadius: 'var(--radius-full)', fontWeight: 800, fontSize: '0.78rem', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                            >
+                              Cero (0)
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* PIE DEL MODAL CON BOTÓN DE GUARDAR / MODIFICAR SIEMPRE VISIBLE */}
+                  <div className="modal-footer" style={{ padding: '18px 24px', background: 'rgba(15, 23, 42, 0.95)', borderTop: '1px solid rgba(255,255,255,0.1)', flexShrink: 0, display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary" 
+                      onClick={() => setShowModal(false)} 
+                      style={{ borderRadius: 'var(--radius-full)', padding: '10px 20px', fontWeight: 700 }}
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary" 
+                      style={{ 
+                        borderRadius: 'var(--radius-full)', 
+                        padding: '12px 28px', 
+                        fontWeight: 900, 
+                        fontSize: '1rem',
+                        background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                        boxShadow: '0 8px 25px rgba(236, 72, 153, 0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <Save size={18} />
+                      {editingProd ? 'Guardar Modificaciones' : 'Guardar Nuevo Producto'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function CashRegister() {
+      const { user, isAdmin } = useAuth();
+      const { 
+        sales = [], payments = [], expenses = [], expenseCategories = [], addExpense, deleteExpense, 
+        cashSession, cashHistory = [], openCash, closeCash, deleteCashHistoryRecord 
+      } = useData();
+
+      const [activeTab, setActiveTab] = useState('current');
+      const [showOpenModal, setShowOpenModal] = useState(false);
+      const [openInput, setOpenInput] = useState('5000');
+      const [showCloseModal, setShowCloseModal] = useState(false);
+      const [actualCloseInput, setActualCloseInput] = useState('');
+      const [showExpenseModal, setShowExpenseModal] = useState(false);
+      const [expenseCategory, setExpenseCategory] = useState(expenseCategories[0] || '⚡ Energía Eléctrica (Luz)');
+      const [expenseDesc, setExpenseDesc] = useState('');
+      const [expenseAmount, setExpenseAmount] = useState('');
+      const [expenseMethod, setExpenseMethod] = useState('Efectivo');
+      const [expenseError, setExpenseError] = useState('');
+      const [selectedAuditHistory, setSelectedAuditHistory] = useState(null);
+
+      const formatPrice = (v) => {
+        const num = Number(v);
+        if (isNaN(num)) return '$ 0';
+        try { return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(num); } catch { return `$ ${num}`; }
+      };
+      const formatDate = (v) => {
+        if (!v) return '-';
+        try { const d = new Date(v); return isNaN(d.getTime()) ? '-' : d.toLocaleString(); } catch { return '-'; }
+      };
+      const formatTime = (v) => {
+        if (!v) return '-';
+        try { const d = new Date(v); return isNaN(d.getTime()) ? '-' : d.toLocaleTimeString([], { hour: '2-2-digit', minute: '2-2-digit' }); } catch { return '-'; }
+      };
+      const isSessionOpen = Boolean(cashSession && cashSession.status === 'open');
+
+      const currentSales = useMemo(() => {
+        if (!cashSession || !cashSession.openedAt) return [];
+        const start = new Date(cashSession.openedAt).getTime();
+        const end = cashSession.closedAt ? new Date(cashSession.closedAt).getTime() : Infinity;
+        return sales.filter(s => s && s.created_at && new Date(s.created_at).getTime() >= start && new Date(s.created_at).getTime() <= end);
+      }, [sales, cashSession]);
+
+      const currentPayments = useMemo(() => {
+        if (!cashSession || !cashSession.openedAt) return [];
+        const start = new Date(cashSession.openedAt).getTime();
+        const end = cashSession.closedAt ? new Date(cashSession.closedAt).getTime() : Infinity;
+        return payments.filter(p => p && p.created_at && new Date(p.created_at).getTime() >= start && new Date(p.created_at).getTime() <= end);
+      }, [payments, cashSession]);
+
+      const currentExpenses = useMemo(() => {
+        if (!cashSession || !cashSession.openedAt) return [];
+        const start = new Date(cashSession.openedAt).getTime();
+        const end = cashSession.closedAt ? new Date(cashSession.closedAt).getTime() : Infinity;
+        return expenses.filter(e => e && e.created_at && new Date(e.created_at).getTime() >= start && new Date(e.created_at).getTime() <= end);
+      }, [expenses, cashSession]);
+
+      const totalsByMethod = useMemo(() => {
+        const res = { EfectivoVentas: 0, EfectivoCobros: 0, EfectivoTotal: 0, Transferencia: 0, Tarjeta: 0, 'Cuenta Corriente': 0, TotalIngresos: 0 };
+        currentSales.forEach(s => {
+          if (s?.status === 'completed') {
+            const amt = Number(s.total) || 0;
+            if (s.paymentMethod === 'Efectivo') res.EfectivoVentas += amt;
+            else res[s.paymentMethod] = (res[s.paymentMethod] || 0) + amt;
+            res.TotalIngresos += amt;
+          }
+        });
+        currentPayments.forEach(p => {
+          if (p) {
+            const amt = Number(p.amount) || 0;
+            if (p.paymentMethod === 'Efectivo') res.EfectivoCobros += amt;
+            else res[p.paymentMethod] = (res[p.paymentMethod] || 0) + amt;
+            res.TotalIngresos += amt;
+          }
+        });
+        res.EfectivoTotal = res.EfectivoVentas + res.EfectivoCobros;
+        return res;
+      }, [currentSales, currentPayments]);
+
+      const totalsExpenses = useMemo(() => {
+        const res = { Efectivo: 0, Transferencia: 0, Tarjeta: 0, TotalGastos: 0 };
+        currentExpenses.forEach(e => {
+          if (e) {
+            const amt = Number(e.amount) || 0;
+            const m = e.paymentMethod || 'Efectivo';
+            res[m] = (res[m] || 0) + amt;
+            res.TotalGastos += amt;
+          }
+        });
+        return res;
+      }, [currentExpenses]);
+
+      const openAmount = Number(cashSession?.openAmount) || 0;
+      const cashInHand = openAmount + totalsByMethod.EfectivoTotal - totalsExpenses.Efectivo;
+
+      const handleOpenCloseModal = () => { setActualCloseInput(cashInHand.toString()); setShowCloseModal(true); };
+      const handleOpenSubmit = (e) => { e.preventDefault(); openCash(openInput || 0); setShowOpenModal(false); };
+      const handleConfirmClose = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const finalCounted = parseFloat(actualCloseInput);
+        const countedCash = isNaN(finalCounted) ? cashInHand : finalCounted;
+        const diff = countedCash - cashInHand;
+        const audit = {
+          openAmount, totalSalesCash: totalsByMethod.EfectivoVentas, totalPaymentsCash: totalsByMethod.EfectivoCobros,
+          totalDigital: (totalsByMethod.Transferencia || 0) + (totalsByMethod.Tarjeta || 0), totalCreditAccount: totalsByMethod['Cuenta Corriente'] || 0,
+          totalExpensesCash: totalsExpenses.Efectivo, totalExpensesOther: totalsExpenses.TotalGastos - totalsExpenses.Efectivo,
+          expectedCash: cashInHand, countedCash, cashDifference: diff, salesCount: currentSales.length, expensesCount: currentExpenses.length
+        };
+        closeCash(countedCash, audit);
+        setShowCloseModal(false);
+      };
+
+      const handleAddExpenseSubmit = (e) => {
+        e.preventDefault(); setExpenseError('');
+        if (!isSessionOpen) return setExpenseError('La caja está CERRADA.');
+        if (!expenseDesc.trim() || !expenseAmount || parseFloat(expenseAmount) <= 0) return setExpenseError('Ingrese descripción y monto mayor a 0.');
+        try {
+          addExpense({ category: expenseCategory, description: expenseDesc, amount: expenseAmount, paymentMethod: expenseMethod });
+          setShowExpenseModal(false); setExpenseDesc(''); setExpenseAmount('');
+        } catch (err) { setExpenseError(err.message); }
+      };
+
+      return (
+        <div style={{ maxWidth: '1400px', margin: '24px auto', padding: '0 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className={`btn ${activeTab === 'current' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('current')}><Wallet size={18} /> Jornada Actual</button>
+              <button className={`btn ${activeTab === 'history' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('history')}><History size={18} /> Historial de Arqueos ({cashHistory.length})</button>
+            </div>
+            <span className={`badge ${isSessionOpen ? 'badge-success' : 'badge-danger'}`} style={{ padding: '8px 14px' }}>{isSessionOpen ? '🟢 JORNADA ABIERTA' : '🔴 JORNADA CERRADA'}</span>
+          </div>
+
+          {activeTab === 'current' ? (
+            <>
+              <div className="glass-card" style={{ padding: '24px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ width: '50px', height: '50px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(236,72,153,0.2), rgba(139,92,246,0.2))', border: '1px solid rgba(236,72,153,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>👋</div>
+                  <div>
+                    <h2 style={{ fontSize: '1.35rem', fontWeight: 800 }}>¡Hola, {user?.full_name || 'Usuario'}!</h2>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                      {isSessionOpen ? `Jornada iniciada el ${formatDate(cashSession?.openedAt)} con ${formatPrice(openAmount)} de fondo inicial.` : 'La caja se encuentra CERRADA. Inicie la jornada para operar.'}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  {!isSessionOpen ? (
+                    <button className="btn btn-success" onClick={() => setShowOpenModal(true)} style={{ fontWeight: 800 }}><Unlock size={18} /> Iniciar Apertura de Jornada</button>
+                  ) : (
+                    <button className="btn btn-danger" onClick={handleOpenCloseModal} style={{ fontWeight: 800 }}><Lock size={18} /> Cierre & Arqueo Final</button>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                <div className="glass-card" style={{ padding: '20px', borderLeft: '4px solid #3b82f6' }}>
+                  <div style={{ fontSize: '0.78rem', color: '#60a5fa', fontWeight: 800, textTransform: 'uppercase' }}>Fondo Inicial Apertura</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>{formatPrice(openAmount)}</div>
+                </div>
+                <div className="glass-card" style={{ padding: '20px', borderLeft: '4px solid #10b981' }}>
+                  <div style={{ fontSize: '0.78rem', color: '#34d399', fontWeight: 800, textTransform: 'uppercase' }}>Efectivo en Caja (Ventas+Cobros)</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#34d399' }}>+ {formatPrice(totalsByMethod.EfectivoTotal)}</div>
+                </div>
+                <div className="glass-card" style={{ padding: '20px', borderLeft: '4px solid #8b5cf6' }}>
+                  <div style={{ fontSize: '0.78rem', color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase' }}>Digital / Tarjeta / Cta Cte</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#a78bfa' }}>{formatPrice((totalsByMethod.Transferencia||0) + (totalsByMethod.Tarjeta||0) + (totalsByMethod['Cuenta Corriente']||0))}</div>
+                </div>
+                <div className="glass-card" style={{ padding: '20px', borderLeft: '4px solid #ef4444' }}>
+                  <div style={{ fontSize: '0.78rem', color: '#f87171', fontWeight: 800, textTransform: 'uppercase' }}>Gastos & Servicios</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#f87171' }}>- {formatPrice(totalsExpenses.TotalGastos)}</div>
+                </div>
+                <div className="glass-card" style={{ padding: '20px', borderLeft: '4px solid #ec4899', background: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(15,23,42,0.8))' }}>
+                  <div style={{ fontSize: '0.78rem', color: '#f472b6', fontWeight: 900, textTransform: 'uppercase' }}>Efectivo Esperado en Caja</div>
+                  <div style={{ fontSize: '1.7rem', fontWeight: 900, color: '#ec4899' }}>{formatPrice(cashInHand)}</div>
+                </div>
+              </div>
+
+              <div className="glass-card" style={{ padding: '24px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: 'var(--glass-border)', paddingBottom: '12px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}><Receipt size={22} style={{ color: '#ef4444' }} /> Gastos de Funcionamiento & Servicios (Luz, Agua, Internet, Limpieza, Alquiler)</h3>
+                  </div>
+                  <button className="btn btn-danger" onClick={() => setShowExpenseModal(true)} disabled={!isSessionOpen}><PlusCircle size={18} /> Registrar Nuevo Gasto</button>
+                </div>
+                <div className="table-responsive">
+                  <table className="custom-table">
+                    <thead><tr><th>Categoría</th><th>Descripción</th><th>Medio de Pago</th><th>Monto</th><th>Registrado Por</th><th>Hora</th><th style={{ textAlign: 'center' }}>Acción</th></tr></thead>
+                    <tbody>
+                      {currentExpenses.length === 0 ? (
+                        <tr><td colSpan="7" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>No hay gastos registrados en esta jornada.</td></tr>
+                      ) : (
+                        currentExpenses.map(exp => (
+                          <tr key={exp.id}>
+                            <td><span className="badge badge-warning">{exp.category}</span></td>
+                            <td><strong>{exp.description}</strong></td>
+                            <td><span className={`badge ${exp.paymentMethod === 'Efectivo' ? 'badge-danger' : 'badge-primary'}`}>{exp.paymentMethod}</span></td>
+                            <td style={{ color: '#f87171', fontWeight: 800 }}>- {formatPrice(exp.amount)}</td>
+                            <td>{exp.userName||'Cajero'}</td>
+                            <td>{formatTime(exp.created_at)}</td>
+                            <td style={{ textAlign: 'center' }}>
+                              {isAdmin ? (
+                                <button className="btn btn-secondary btn-sm" style={{ color: '#ef4444' }} onClick={() => deleteExpense(exp.id)} title="Eliminar Gasto (Solo Admin)"><Trash2 size={16} /></button>
+                              ) : (
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>🔒 Solo Admin</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="glass-card" style={{ padding: '24px' }}>
+              <h3>📜 Historial Permanente de Arqueos de Caja</h3>
+              <div className="table-responsive" style={{ marginTop: '16px' }}>
+                <table className="custom-table">
+                  <thead><tr><th>Fecha Cierre</th><th>Apertura Por</th><th>Cierre Por</th><th>Fondo Inicial</th><th>Efectivo Cierre</th><th style={{ textAlign: 'center' }}>Acciones</th></tr></thead>
+                  <tbody>
+                    {cashHistory.length === 0 ? (
+                      <tr><td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>No hay cierres de caja registrados aún.</td></tr>
+                    ) : (
+                      cashHistory.map(h => (
+                        <tr key={h.id}>
+                          <td>{formatDate(h.closedAt)}</td>
+                          <td>{h.openedBy||'Cajero'}</td>
+                          <td>{h.closedBy||'Cajero'}</td>
+                          <td>{formatPrice(h.openAmount)}</td>
+                          <td style={{ fontWeight: 800, color: '#ec4899' }}>{formatPrice(h.closeAmount || h.audit?.expectedCash)}</td>
+                          <td style={{ textAlign: 'center' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
+                              {h.audit && <button className="btn btn-secondary btn-sm" onClick={() => setSelectedAuditHistory(h)}><Eye size={16} /> Ver Arqueo</button>}
+                              {isAdmin && <button className="btn btn-secondary btn-sm" style={{ color: '#ef4444' }} onClick={() => { if (window.confirm('¿Eliminar arqueo?')) deleteCashHistoryRecord(h.id); }} title="Eliminar (Solo Admin)"><Trash2 size={16} /></button>}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {showOpenModal && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '460px', textAlign: 'center' }}>
+                <div className="modal-header" style={{ background: 'rgba(16,185,129,0.1)' }}><h3 style={{ color: '#34d399' }}><Unlock size={20} /> Apertura de Jornada</h3><button className="btn btn-secondary btn-sm" onClick={() => setShowOpenModal(false)}>✕</button></div>
+                <form onSubmit={handleOpenSubmit}>
+                  <div className="modal-body">
+                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>💵</div>
+                    <h4 style={{ fontWeight: 800 }}>¡Hola, {user?.full_name || 'Cajero'}!</h4>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>Ingrese el fondo inicial en efectivo para abrir la caja hoy.</p>
+                    <div className="form-group" style={{ textAlign: 'left' }}>
+                      <label className="form-label">Monto Fondo Inicial (ARS) *</label>
+                      <input type="number" min="0" step="100" className="form-control" required style={{ fontSize: '1.2rem', textAlign: 'center', fontWeight: 800 }} value={openInput} onChange={e => setOpenInput(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="modal-footer"><button type="button" className="btn btn-secondary" onClick={() => setShowOpenModal(false)}>Cancelar</button><button type="submit" className="btn btn-success"><CheckCircle size={18} /> Confirmar y Abrir Caja</button></div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {showExpenseModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header"><h3>💸 Registrar Gasto / Servicio</h3><button className="btn btn-secondary btn-sm" onClick={() => setShowExpenseModal(false)}>✕</button></div>
+                <form onSubmit={handleAddExpenseSubmit}>
+                  <div className="modal-body">
+                    {expenseError && <div style={{ color: '#f87171', background: 'rgba(239,68,68,0.1)', padding: '10px', borderRadius: '8px', marginBottom: '14px' }}>⚠️ {expenseError}</div>}
+                    <div className="form-group"><label className="form-label">Categoría del Servicio *</label><select className="form-control" value={expenseCategory} onChange={e => setExpenseCategory(e.target.value)}>{expenseCategories.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                    <div className="form-group"><label className="form-label">Concepto / Descripción *</label><input type="text" className="form-control" required value={expenseDesc} onChange={e => setExpenseDesc(e.target.value)} placeholder="Ej. Factura Luz o Agua" /></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                      <div className="form-group"><label className="form-label">Monto (ARS) *</label><input type="number" min="1" className="form-control" required value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} /></div>
+                      <div className="form-group"><label className="form-label">Medio de Pago *</label><select className="form-control" value={expenseMethod} onChange={e => setExpenseMethod(e.target.value)}><option value="Efectivo">💵 Efectivo de Caja</option><option value="Transferencia">📲 Transferencia</option><option value="Tarjeta">💳 Tarjeta</option></select></div>
+                    </div>
+                  </div>
+                  <div className="modal-footer"><button type="button" className="btn btn-secondary" onClick={() => setShowExpenseModal(false)}>Cancelar</button><button type="submit" className="btn btn-danger">Cargar Gasto</button></div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {showCloseModal && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '580px' }}>
+                <div className="modal-header" style={{ background: 'rgba(239, 68, 68, 0.1)' }}><h3 style={{ color: '#f87171' }}>🔒 Cierre & Arqueo Final de Jornada</h3><button className="btn btn-secondary btn-sm" onClick={() => setShowCloseModal(false)}>✕</button></div>
+                <form onSubmit={handleConfirmClose}>
+                  <div className="modal-body">
+                    <div style={{ background: 'var(--bg-primary)', padding: '16px', borderRadius: '12px', marginBottom: '16px' }}>
+                      <h4 style={{ color: 'var(--color-primary)', marginBottom: '10px' }}>📊 AUDITORÍA DEL SISTEMA (ESPERADO)</h4>
+                      <div style={{ display: 'grid', gap: '8px', fontSize: '0.88rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Fondo Inicial Apertura:</span><strong>{formatPrice(openAmount)}</strong></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}><span>+ Ventas en Efectivo:</span><strong>+ {formatPrice(totalsByMethod.EfectivoVentas)}</strong></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}><span>+ Cobros Cta. Cte. en Efectivo:</span><strong>+ {formatPrice(totalsByMethod.EfectivoCobros)}</strong></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#06b6d4' }}><span>+ Digital (Transferencias / Tarjetas):</span><strong>+ {formatPrice((totalsByMethod.Transferencia||0)+(totalsByMethod.Tarjeta||0))}</strong></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f472b6' }}><span>+ Ventas en Cuenta Corriente (+10%):</span><strong>+ {formatPrice(totalsByMethod['Cuenta Corriente'])}</strong></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f87171', borderTop: '1px solid var(--border-color)', paddingTop: '6px' }}><span>- Gastos Totales (Luz, Agua, Limpieza):</span><strong>- {formatPrice(totalsExpenses.TotalGastos)}</strong></div>
+                        <div style={{ borderTop: '2px dashed var(--color-primary)', paddingTop: '10px', marginTop: '6px', display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 900 }}>
+                          <span>Efectivo Esperado en Sistema:</span><span style={{ color: '#60a5fa' }}>{formatPrice(cashInHand)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.3)', borderRadius: '14px', padding: '16px', marginBottom: '14px' }}>
+                      <div className="form-group" style={{ marginBottom: '10px' }}>
+                        <label className="form-label" style={{ fontWeight: 800, color: '#f472b6' }}>💵 Ingrese el Dinero en Efectivo Real Contado en Caja ($ ARS) *</label>
+                        <input type="number" min="0" step="any" required className="form-control" style={{ fontSize: '1.25rem', textAlign: 'center', fontWeight: 900, color: '#fff', background: 'rgba(15,23,42,0.8)' }} value={actualCloseInput} onChange={e => setActualCloseInput(e.target.value)} placeholder={cashInHand.toString()} />
+                      </div>
+                      {(() => {
+                        const parsed = parseFloat(actualCloseInput);
+                        const realCount = isNaN(parsed) ? cashInHand : parsed;
+                        const diff = realCount - cashInHand;
+                        return (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px dotted rgba(236,72,153,0.3)' }}>
+                            <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Diferencia de Arqueo (Caja):</span>
+                            {diff === 0 ? <span className="badge badge-success">✓ Caja Exacta</span> : diff > 0 ? <span className="badge badge-success">🟢 Sobrante: + {formatPrice(diff)}</span> : <span className="badge badge-danger">🔴 Faltante: - {formatPrice(Math.abs(diff))}</span>}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                  <div className="modal-footer"><button type="button" className="btn btn-secondary" onClick={() => setShowCloseModal(false)}>Cancelar</button><button type="submit" className="btn btn-danger" style={{ fontWeight: 800 }}>🔒 Confirmar y Cerrar Caja</button></div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {selectedAuditHistory && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '580px' }}>
+                <div className="modal-header"><h3>📋 Arqueo Histórico Detallado</h3><button className="btn btn-secondary btn-sm" onClick={() => setSelectedAuditHistory(null)}>✕</button></div>
+                <div className="modal-body">
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Jornada del <strong>{formatDate(selectedAuditHistory.openedAt)}</strong> al <strong>{formatDate(selectedAuditHistory.closedAt)}</strong></p>
+                  {selectedAuditHistory.audit && (
+                    <div style={{ display: 'grid', gap: '8px', fontSize: '0.9rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Fondo Inicial:</span><strong>{formatPrice(selectedAuditHistory.audit.openAmount)}</strong></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}><span>Ventas en Efectivo:</span><strong>+ {formatPrice(selectedAuditHistory.audit.totalSalesCash)}</strong></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}><span>Cobros Cta Cte Efectivo:</span><strong>+ {formatPrice(selectedAuditHistory.audit.totalPaymentsCash)}</strong></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#06b6d4' }}><span>Ventas Digitales/Tarjeta:</span><strong>+ {formatPrice(selectedAuditHistory.audit.totalDigital)}</strong></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f472b6' }}><span>Otorgado en Cta Cte:</span><strong>+ {formatPrice(selectedAuditHistory.audit.totalCreditAccount)}</strong></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f87171' }}><span>Gastos en Efectivo:</span><strong>- {formatPrice(selectedAuditHistory.audit.totalExpensesCash)}</strong></div>
+                      <div style={{ borderTop: '2px dashed var(--color-primary)', paddingTop: '10px', marginTop: '6px', display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 900 }}><span>Efectivo Esperado:</span><span style={{ color: '#ec4899' }}>{formatPrice(selectedAuditHistory.audit.expectedCash)}</span></div>
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer"><button className="btn btn-primary" onClick={() => setSelectedAuditHistory(null)}>Cerrar</button></div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function UsersAdmin() {
+      const { usersList, createNewUser, updateUser, deleteUser, user: currentUser } = useAuth();
+      const { exportBackupData, importBackupData } = useData();
+      const [showModal, setShowModal] = useState(false);
+      const [editingUser, setEditingUser] = useState(null);
+      const [fullName, setFullName] = useState('');
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [role, setRole] = useState('cajero');
+
+      const openModal = (u = null) => {
+        if (u) { setEditingUser(u); setFullName(u.full_name||''); setEmail(u.email||''); setPassword(u.password||''); setRole(u.role||'cajero'); }
+        else { setEditingUser(null); setFullName(''); setEmail(''); setPassword('123456'); setRole('cajero'); }
+        setShowModal(true);
+      };
+
+      const handleSave = (e) => {
+        e.preventDefault();
+        if (editingUser) updateUser(editingUser.id, { full_name: fullName, email, password, role });
+        else createNewUser(email, password, fullName, role);
+        setShowModal(false);
+      };
+
+      return (
+        <div style={{ maxWidth: '1150px', margin: '24px auto', padding: '0 20px' }}>
+          <div className="glass-card" style={{ padding: '24px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div><h2><ShieldCheck /> Usuarios & Claves de Acceso</h2></div>
+            <button className="btn btn-primary" onClick={() => openModal()}><UserPlus /> + Nuevo Usuario / Clave</button>
+          </div>
+
+          <div className="table-responsive glass-card">
+            <table className="custom-table">
+              <thead><tr><th>Nombre</th><th>Correo</th><th>Clave</th><th>Rol</th><th>Acción</th></tr></thead>
+              <tbody>
+                {usersList.map(u => (
+                  <tr key={u.id}>
+                    <td><strong>{u.full_name}</strong></td>
+                    <td>{u.email}</td>
+                    <td><code>🔑 {u.password||'••••••'}</code></td>
+                    <td><span className={`badge ${u.role === 'admin' ? 'badge-primary' : 'badge-warning'}`}>{u.role}</span></td>
+                    <td>
+                      <button className="btn btn-primary btn-sm" onClick={() => openModal(u)} style={{ marginRight: '6px' }}><Edit2 size={14} /> Editar</button>
+                      {u.id !== currentUser?.id && <button className="btn btn-secondary btn-sm" style={{ color: '#ef4444' }} onClick={() => deleteUser(u.id)}><Trash2 size={14} /></button>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {showModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header"><h3>{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</h3><button className="btn btn-secondary btn-sm" onClick={() => setShowModal(false)}>✕</button></div>
+                <form onSubmit={handleSave}>
+                  <div className="modal-body">
+                    <div className="form-group"><label className="form-label">Nombre y Apellido *</label><input type="text" className="form-control" required value={fullName} onChange={e => setFullName(e.target.value)} /></div>
+                    <div className="form-group"><label className="form-label">Correo *</label><input type="email" className="form-control" required value={email} onChange={e => setEmail(e.target.value)} /></div>
+                    <div className="form-group"><label className="form-label">Contraseña *</label><input type="text" className="form-control" required value={password} onChange={e => setPassword(e.target.value)} /></div>
+                    <div className="form-group"><label className="form-label">Rol *</label><select className="form-control" value={role} onChange={e => setRole(e.target.value)}><option value="cajero">🛒 Cajero</option><option value="admin">👑 Administrador</option></select></div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
+                    <button type="submit" className="btn btn-primary">Guardar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          <div className="glass-card" style={{ padding: '24px', marginTop: '30px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-primary)' }}>
+              <ShieldCheck size={22} /> Resguardo de Información & Copias de Seguridad (Backups)
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '20px' }}>
+              Exporte una copia de resguardo con todos los datos a su equipo para proteger la información en caso de formatear la máquina.
+            </p>
+            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+              <button className="btn btn-primary" onClick={exportBackupData} style={{ fontWeight: 800 }}>📥 Descargar Copia de Seguridad (JSON)</button>
+              <label className="btn btn-secondary" style={{ cursor: 'pointer', fontWeight: 800, border: '1px dashed var(--color-primary)' }}>
+                📤 Restaurar Sistema desde Backup
+                <input type="file" accept=".json" style={{ display: 'none' }} onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                      try { importBackupData(evt.target.result); alert('✅ Copia restaurada con éxito.'); }
+                      catch(err) { alert('⚠️ Error: ' + err.message); }
+                    };
+                    reader.readAsText(file);
+                  }
+                }} />
+              </label>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    class ErrorBoundary extends Component {
+      constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+      static getDerivedStateFromError(error) { return { hasError: true, error }; }
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div style={{ padding: '40px', textAlign: 'center' }}>
+              <h2>⚠️ Hubo un error al renderizar la vista</h2>
+              <button className="btn btn-primary" onClick={() => window.location.reload()}>🔄 Recargar Página</button>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
+
+    function App() {
+      const { user, loading } = useAuth();
+      const [activeTab, setActiveTab] = useState('pos');
+
+      if (loading) return <div style={{ color: '#ec4899', textAlign: 'center', marginTop: '100px' }}><h2>Cargando Regalería Tina...</h2></div>;
+      if (!user) return <Login />;
+
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          <div className="ambient-orb-1"></div>
+          <div className="ambient-orb-2"></div>
+          <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+          <main style={{ flex: 1, paddingBottom: '40px' }}>
+            <ErrorBoundary key={activeTab}>
+              {activeTab === 'pos' && <POS />}
+              {activeTab === 'accounts' && <Accounts />}
+              {activeTab === 'inventory' && <Inventory />}
+              {activeTab === 'cash' && <CashRegister />}
+              {activeTab === 'users' && <UsersAdmin />}
+            </ErrorBoundary>
+          </main>
+          <footer style={{ background: 'var(--bg-secondary)', borderTop: 'var(--glass-border)', padding: '16px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            Regalería Tina - Sistema Gestor de Ventas, Inventario & Cuentas Corrientes © {new Date().getFullYear()}
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <AuthProvider>
+        <DataProvider>
+          <App />
+        </DataProvider>
+      </AuthProvider>
+    );
+  </script>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
