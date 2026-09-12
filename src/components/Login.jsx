@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, UserPlus, KeyRound, ArrowLeft, CheckCircle } from 'lucide-react';
+import { LogIn, KeyRound, ArrowLeft, CheckCircle } from 'lucide-react';
 
 export function Login() {
-  const { login, register, resetPassword } = useAuth();
+  const { login, resetPassword } = useAuth();
   
-  // Modos de vista: 'login', 'register', 'forgot'
+  // Modos de vista: 'login', 'forgot'
   const [mode, setMode] = useState('login');
 
-  // Campos de formulario (vacíos por defecto)
+  // Campos de formulario
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -29,23 +28,7 @@ export function Login() {
     try {
       await login(email, password);
     } catch (err) {
-      setErrorMsg(err.message || 'Error al iniciar sesión.');
-    }
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    clearMessages();
-    if (!fullName.trim() || !email.trim() || !password.trim()) {
-      setErrorMsg('Por favor complete Nombre, Correo y Contraseña.');
-      return;
-    }
-
-    try {
-      await register(email, password, fullName);
-      setSuccessMsg('✅ Cuenta creada exitosamente. Ingresando...');
-    } catch (err) {
-      setErrorMsg(err.message || 'Error al registrar la cuenta.');
+      setErrorMsg(err.message || 'Error al iniciar sesión. Verifique sus credenciales.');
     }
   };
 
@@ -72,17 +55,6 @@ export function Login() {
       }, 2000);
     } catch (err) {
       setErrorMsg(err.message || 'Error al modificar la contraseña.');
-    }
-  };
-
-  const handleDemoLogin = async (demoEmail, demoPassword) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-    clearMessages();
-    try {
-      await login(demoEmail, demoPassword);
-    } catch (err) {
-      setErrorMsg(err.message || 'Error al iniciar sesión.');
     }
   };
 
@@ -164,81 +136,10 @@ export function Login() {
               <LogIn size={18} />
               Iniciar Sesión
             </button>
-
-            <div style={{ marginTop: '20px', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-              ¿No tienes cuenta?{' '}
-              <button 
-                type="button" 
-                onClick={() => { setMode('register'); clearMessages(); }} 
-                style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
-              >
-                Registrarse aquí
-              </button>
-            </div>
           </form>
         )}
 
-        {/* MODULO 2: CREAR NUEVA CUENTA (REGISTRARSE) */}
-        {mode === 'register' && (
-          <form onSubmit={handleRegister}>
-            <h3 style={{ fontSize: '1.15rem', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--color-primary)' }}>
-              <UserPlus size={20} />
-              Crear Nueva Cuenta
-            </h3>
-
-            <div className="form-group" style={{ textAlign: 'left' }}>
-              <label className="form-label">Nombre y Apellido *</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                required 
-                value={fullName} 
-                onChange={e => setFullName(e.target.value)} 
-                placeholder="Ej. Sofía Vendedora" 
-              />
-            </div>
-
-            <div className="form-group" style={{ textAlign: 'left' }}>
-              <label className="form-label">Correo Electrónico *</label>
-              <input 
-                type="email" 
-                className="form-control" 
-                required 
-                value={email} 
-                onChange={e => setEmail(e.target.value)} 
-                placeholder="sofia@regaleriatina.com" 
-              />
-            </div>
-
-            <div className="form-group" style={{ textAlign: 'left' }}>
-              <label className="form-label">Contraseña de Acceso *</label>
-              <input 
-                type="password" 
-                className="form-control" 
-                required 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                placeholder="Mínimo 6 caracteres" 
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', marginTop: '10px' }}>
-              Registrarse e Ingresar
-            </button>
-
-            <button 
-              type="button" 
-              className="btn btn-secondary btn-sm" 
-              style={{ width: '100%', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-              onClick={() => { setMode('login'); clearMessages(); }}
-            >
-              <ArrowLeft size={16} />
-              Volver al Inicio de Sesión
-            </button>
-          </form>
-        )}
-
-        {/* MODULO 3: MODIFICAR / RESTABLECER CONTRASEÑA OLVIDADA */}
+        {/* MODULO 2: MODIFICAR / RESTABLECER CONTRASEÑA OLVIDADA */}
         {mode === 'forgot' && (
           <form onSubmit={handleResetPassword}>
             <h3 style={{ fontSize: '1.15rem', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#fbbf24' }}>
@@ -296,31 +197,6 @@ export function Login() {
               Volver al Inicio de Sesión
             </button>
           </form>
-        )}
-
-        {/* ACCESO DEMO RÁPIDO */}
-        {mode === 'login' && (
-          <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: 'var(--glass-border)' }}>
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginBottom: '10px', textTransform: 'uppercase', fontWeight: 700 }}>
-              Acceso Rápido Demo:
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              <button 
-                type="button" 
-                className="btn btn-secondary btn-sm" 
-                onClick={() => handleDemoLogin('admin@regaleriatina.com', 'admin123')}
-              >
-                👑 Admin
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary btn-sm" 
-                onClick={() => handleDemoLogin('cajero@regaleriatina.com', 'cajero123')}
-              >
-                🛒 Cajero
-              </button>
-            </div>
-          </div>
         )}
 
       </div>
