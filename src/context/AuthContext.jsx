@@ -54,21 +54,13 @@ export function AuthProvider({ children }) {
       localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(INITIAL_USERS));
     }
 
-    // Asegurar que los usuarios iniciales (Admin/Cajero) siempre existan
-    const combinedUsers = [...users];
-    for (const initUser of INITIAL_USERS) {
-      if (!combinedUsers.some(u => u.email?.toLowerCase() === initUser.email.toLowerCase())) {
-        combinedUsers.push(initUser);
-      }
-    }
-
-    setUsersList(combinedUsers);
+    setUsersList(users);
 
     const savedUserStr = localStorage.getItem(CURRENT_USER_KEY);
     if (savedUserStr) {
       try {
         const saved = JSON.parse(savedUserStr);
-        const match = combinedUsers.find(u => u.id === saved.id || u.email?.toLowerCase() === saved.email?.toLowerCase());
+        const match = users.find(u => u.id === saved.id || u.email?.toLowerCase() === saved.email?.toLowerCase());
         setUser(match || saved);
       } catch (e) {
         setUser(null);
@@ -89,18 +81,15 @@ export function AuthProvider({ children }) {
         try {
           const parsed = JSON.parse(storedUsers);
           if (Array.isArray(parsed) && parsed.length > 0) pool = parsed;
-        } catch (e) {}
+        } catch (e) {
+          pool = INITIAL_USERS;
+        }
+      } else {
+        pool = INITIAL_USERS;
       }
     }
 
-    const combinedPool = [...pool];
-    for (const initUser of INITIAL_USERS) {
-      if (!combinedPool.some(u => u.email?.toLowerCase() === initUser.email.toLowerCase())) {
-        combinedPool.push(initUser);
-      }
-    }
-
-    const found = combinedPool.find(u => u.email?.trim().toLowerCase() === cleanEmail);
+    const found = pool.find(u => u.email?.trim().toLowerCase() === cleanEmail);
     if (!found) {
       throw new Error('El correo electrónico no se encuentra registrado.');
     }
