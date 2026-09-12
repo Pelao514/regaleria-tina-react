@@ -105,8 +105,11 @@ export function AuthProvider({ children }) {
       throw new Error('El correo electrónico no se encuentra registrado.');
     }
 
-    if (found.password && cleanPassword && found.password !== cleanPassword) {
-      throw new Error('La contraseña ingresada es incorrecta.');
+    if (found.password && cleanPassword) {
+      const isMatch = found.password === cleanPassword || found.password.toLowerCase() === cleanPassword.toLowerCase();
+      if (!isMatch) {
+        throw new Error('La contraseña ingresada es incorrecta.');
+      }
     }
 
     setUser(found);

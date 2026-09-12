@@ -107,6 +107,9 @@ export function Login() {
                 value={email} 
                 onChange={e => setEmail(e.target.value)} 
                 required 
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 placeholder="ejemplo@regaleriatina.com" 
               />
             </div>
@@ -128,6 +131,9 @@ export function Login() {
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
                 required 
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 placeholder="••••••••" 
               />
             </div>
