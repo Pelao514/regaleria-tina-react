@@ -67,12 +67,25 @@ export function AuthProvider({ children }) {
   };
 
   const login = async (email, password) => {
-    const found = usersList.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPassword = (password || '').trim();
+
+    let pool = usersList;
+    if (!pool || pool.length === 0) {
+      const storedUsers = localStorage.getItem(LOCAL_USERS_KEY);
+      if (storedUsers) {
+        try { pool = JSON.parse(storedUsers); } catch (e) { pool = INITIAL_USERS; }
+      } else {
+        pool = INITIAL_USERS;
+      }
+    }
+
+    const found = pool.find(u => u.email?.trim().toLowerCase() === cleanEmail);
     if (!found) {
       throw new Error('El correo electrónico no se encuentra registrado.');
     }
 
-    if (found.password && password && found.password !== password) {
+    if (found.password && cleanPassword && found.password !== cleanPassword) {
       throw new Error('La contraseña ingresada es incorrecta.');
     }
 
