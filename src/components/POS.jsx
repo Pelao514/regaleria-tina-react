@@ -1,17 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { generateAutoCode } from '../lib/utils';
-import { 
-  Search, 
-  Plus, 
-  Minus, 
-  Trash2, 
-  ShoppingBag, 
-  DollarSign, 
-  CreditCard, 
-  Smartphone, 
-  FileText, 
-  UserPlus, 
+import {
+  Search,
+  Plus,
+  Minus,
+  Trash2,
+  ShoppingBag,
+  DollarSign,
+  CreditCard,
+  Smartphone,
+  FileText,
+  UserPlus,
   CheckCircle,
   AlertTriangle,
   Edit2,
@@ -21,14 +21,14 @@ import {
 } from 'lucide-react';
 
 export function POS() {
-  const { 
-    products, 
-    customers, 
-    addCustomer, 
-    updateCustomer, 
-    deleteCustomer, 
-    processSale, 
-    cashSession, 
+  const {
+    products,
+    customers,
+    addCustomer,
+    updateCustomer,
+    deleteCustomer,
+    processSale,
+    cashSession,
     sales,
     categories = [],
     brands = [],
@@ -38,7 +38,7 @@ export function POS() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [cart, setCart] = useState([]);
-  
+
   const [paymentMethod, setPaymentMethod] = useState('Efectivo');
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
 
@@ -299,18 +299,18 @@ export function POS() {
 
   return (
     <div style={{ maxWidth: '1440px', margin: '24px auto', padding: '0 20px' }}>
-      
+
       {/* ALERTA DE CAJA CERRADA */}
       {cashSession?.status !== 'open' && (
-        <div style={{ 
-          background: 'rgba(239, 68, 68, 0.15)', 
-          border: '1px solid rgba(239, 68, 68, 0.35)', 
-          color: '#f87171', 
-          padding: '14px 20px', 
-          borderRadius: 'var(--radius-md)', 
-          marginBottom: '20px', 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.15)',
+          border: '1px solid rgba(239, 68, 68, 0.35)',
+          color: '#f87171',
+          padding: '14px 20px',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
           gap: '14px',
           boxShadow: '0 8px 24px rgba(239, 68, 68, 0.15)'
         }}>
@@ -322,28 +322,28 @@ export function POS() {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 440px', gap: '24px', alignItems: 'start' }}>
-        
+
         {/* COLUMNA IZQUIERDA: CATÁLOGO Y BUSCADOR */}
         <div>
-          
+
           {/* BUSCADOR Y CHIPS DE CATEGORÍA */}
           <div className="glass-card" style={{ padding: '20px 24px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ position: 'relative', flex: 1 }}>
                 <Search size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-primary)' }} />
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  style={{ paddingLeft: '48px', fontSize: '1.05rem', borderRadius: 'var(--radius-full)' }} 
-                  placeholder="🔍 Buscar por Código (ej. MB-01-0001), Nombre, Marca o Categoría..." 
-                  value={search} 
-                  onChange={e => setSearch(e.target.value)} 
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ paddingLeft: '48px', fontSize: '1.05rem', borderRadius: 'var(--radius-full)' }}
+                  placeholder="🔍 Buscar por Código (ej. MB-01-0001), Nombre, Marca o Categoría..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
                 />
               </div>
-              <button 
-                type="button" 
-                className="btn btn-primary" 
+              <button
+                type="button"
+                className="btn btn-primary"
                 onClick={() => {
                   const initCategory = selectedCategory !== 'ALL' ? selectedCategory : 'General';
                   const autoCode = generateAutoCode(initCategory, products);
@@ -355,13 +355,13 @@ export function POS() {
                 <Plus size={18} /> + Nuevo Producto
               </button>
             </div>
-            
+
             {/* CATEGORY PILLS */}
             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
               {['ALL', 'Marroquinería', 'Ropa Interior', 'Bijouterie', 'Regalería'].map(cat => (
-                <button 
-                  key={cat} 
-                  className={`btn btn-sm ${selectedCategory === cat ? 'btn-primary' : 'btn-secondary'}`} 
+                <button
+                  key={cat}
+                  className={`btn btn-sm ${selectedCategory === cat ? 'btn-primary' : 'btn-secondary'}`}
                   onClick={() => setSelectedCategory(cat)}
                   style={{ borderRadius: 'var(--radius-full)', padding: '6px 16px', fontWeight: 700 }}
                 >
@@ -379,8 +379,8 @@ export function POS() {
               <p style={{ fontSize: '0.88rem', marginBottom: '16px', color: 'var(--text-muted)' }}>
                 No hay ítems en catálogo que coincidan con la búsqueda "{search}".
               </p>
-              <button 
-                className="btn btn-primary" 
+              <button
+                className="btn btn-primary"
                 onClick={() => {
                   setNewProdForm(f => ({ ...f, name: search }));
                   setShowNewProdModal(true);
@@ -408,23 +408,23 @@ export function POS() {
                       </div>
 
                       <div style={{ marginBottom: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                        <span style={{ 
-                          background: 'rgba(236, 72, 153, 0.15)', 
-                          color: '#ec4899', 
-                          padding: '2px 8px', 
-                          borderRadius: 'var(--radius-full)', 
-                          fontSize: '0.75rem', 
-                          fontWeight: 800 
+                        <span style={{
+                          background: 'rgba(236, 72, 153, 0.15)',
+                          color: '#ec4899',
+                          padding: '2px 8px',
+                          borderRadius: 'var(--radius-full)',
+                          fontSize: '0.75rem',
+                          fontWeight: 800
                         }}>
                           🏷️ {p.brand || 'Sin Marca'}
                         </span>
                         {p.barcode && (
-                          <span style={{ 
-                            background: 'rgba(59, 130, 246, 0.15)', 
-                            color: '#60a5fa', 
-                            padding: '2px 8px', 
-                            borderRadius: 'var(--radius-full)', 
-                            fontSize: '0.75rem', 
+                          <span style={{
+                            background: 'rgba(59, 130, 246, 0.15)',
+                            color: '#60a5fa',
+                            padding: '2px 8px',
+                            borderRadius: 'var(--radius-full)',
+                            fontSize: '0.75rem',
                             fontWeight: 800,
                             fontFamily: 'monospace'
                           }}>
@@ -433,42 +433,43 @@ export function POS() {
                         )}
                       </div>
 
-                    <h4 style={{ fontSize: '1.02rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '14px', lineHeight: '1.3' }}>
-                      {p.name}
-                    </h4>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px', letterSpacing: '-0.02em' }}>
-                      {formatPrice(p.sellPrice)}
+                      <h4 style={{ fontSize: '1.02rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '14px', lineHeight: '1.3' }}>
+                        {p.name}
+                      </h4>
                     </div>
-                    <div className="stock-level-bar" style={{ marginBottom: '14px' }} title={`Stock disponible: ${p.stock}`}>
-                      <div 
-                        className="stock-level-fill" 
-                        style={{ 
-                          width: isOutOfStock ? '0%' : `${Math.min(100, Math.max(15, (p.stock / (p.minStock * 3)) * 100))}%`,
-                          background: isOutOfStock ? '#ef4444' : isLowStock ? '#f59e0b' : '#10b981'
-                        }}
-                      ></div>
+                    <div>
+                      <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+                        {formatPrice(p.sellPrice)}
+                      </div>
+                      <div className="stock-level-bar" style={{ marginBottom: '14px' }} title={`Stock disponible: ${p.stock}`}>
+                        <div
+                          className="stock-level-fill"
+                          style={{
+                            width: isOutOfStock ? '0%' : `${Math.min(100, Math.max(15, (p.stock / (p.minStock * 3)) * 100))}%`,
+                            background: isOutOfStock ? '#ef4444' : isLowStock ? '#f59e0b' : '#10b981'
+                          }}
+                        ></div>
+                      </div>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        style={{ width: '100%', borderRadius: 'var(--radius-sm)', padding: '9px 14px' }}
+                        onClick={() => addToCart(p)}
+                        disabled={isOutOfStock}
+                      >
+                        <Plus size={16} /> Agregar al Carrito
+                      </button>
                     </div>
-                    <button 
-                      className="btn btn-primary btn-sm" 
-                      style={{ width: '100%', borderRadius: 'var(--radius-sm)', padding: '9px 14px' }} 
-                      onClick={() => addToCart(p)} 
-                      disabled={isOutOfStock}
-                    >
-                      <Plus size={16} /> Agregar al Carrito
-                    </button>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* COLUMNA DERECHA: CARRITO LATERAL DE COMPRAS */}
         <div>
           <div className="glass-card" style={{ padding: '24px', position: 'sticky', top: '90px' }}>
-            
+
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '14px', borderBottom: 'var(--glass-border)' }}>
               <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 800 }}>
                 <ShoppingBag size={22} style={{ color: 'var(--color-primary)' }} />
@@ -477,8 +478,8 @@ export function POS() {
               {cart.length > 0 && (
                 <button className="btn btn-secondary btn-sm" onClick={clearAllCart} style={{ color: '#ef4444', borderRadius: 'var(--radius-full)' }}>
                   <Trash2 size={14} /> Vaciar
-                </button>
-              )}
+                </button>)
+              }
             </div>
 
             {errorMsg && (
@@ -491,7 +492,7 @@ export function POS() {
             <div style={{ maxHeight: '280px', overflowY: 'auto', marginBottom: '20px', paddingRight: '4px' }}>
               {cart.length === 0 ? (
                 <div style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '40px 0', fontSize: '0.92rem' }}>
-                  🛒 Carrito vacío.<br/>Haz clic en <strong>"+ Agregar al Carrito"</strong> para comenzar.
+                  🛒 Carrito vacío.<br />Haz clic en <strong>"+ Agregar al Carrito"</strong> para comenzar.
                 </div>
               ) : (
                 cart.map(item => (
@@ -593,10 +594,10 @@ export function POS() {
             </div>
 
             {/* BOTÓN COBRAR */}
-            <button 
-              className={`btn ${cashSession?.status === 'open' ? 'btn-success' : 'btn-secondary'}`} 
-              style={{ width: '100%', padding: '14px', fontSize: '1.05rem', fontWeight: 800, borderRadius: 'var(--radius-sm)' }} 
-              onClick={handleCheckout} 
+            <button
+              className={`btn ${cashSession?.status === 'open' ? 'btn-success' : 'btn-secondary'}`}
+              style={{ width: '100%', padding: '14px', fontSize: '1.05rem', fontWeight: 800, borderRadius: 'var(--radius-sm)' }}
+              onClick={handleCheckout}
               disabled={cart.length === 0 || cashSession?.status !== 'open'}
             >
               <CheckCircle size={20} /> {cashSession?.status !== 'open' ? '🔒 Caja Cerrada' : 'Confirmar Venta y Cobrar'}
@@ -642,7 +643,7 @@ export function POS() {
               <button className="btn btn-secondary btn-sm" onClick={() => setCompletedSale(null)}>✕</button>
             </div>
             <div className="modal-body">
-              
+
               <div className="receipt-box">
                 <div style={{ textAlign: 'center', marginBottom: '14px', borderBottom: '1px dashed #cbd5e1', paddingBottom: '10px' }}>
                   <h3 style={{ fontSize: '1.2rem', fontWeight: 900 }}>REGALERÍA TINA</h3>
@@ -698,6 +699,7 @@ export function POS() {
             </div>
           </div>
         </div>
+      )}
       {/* MODAL NUEVO PRODUCTO RÁPIDO EN POS */}
       {showNewProdModal && (
         <div className="modal-overlay">
@@ -712,11 +714,11 @@ export function POS() {
               <div className="modal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div className="form-group">
                   <label className="form-label" style={{ fontWeight: 800 }}>Nombre del Producto *</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    required 
-                    value={newProdForm.name} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    required
+                    value={newProdForm.name}
                     onChange={e => {
                       const newName = e.target.value;
                       setNewProdForm(f => {
@@ -732,9 +734,9 @@ export function POS() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div className="form-group">
                     <label className="form-label" style={{ fontWeight: 700 }}>Categoría / Rubro</label>
-                    <select 
-                      className="form-control" 
-                      value={newProdForm.category} 
+                    <select
+                      className="form-control"
+                      value={newProdForm.category}
                       onChange={e => {
                         const newCat = e.target.value;
                         const autoCode = generateAutoCode(newCat, products, newProdForm.name, newProdForm.variantCode || '01');
@@ -749,9 +751,9 @@ export function POS() {
                   </div>
                   <div className="form-group">
                     <label className="form-label" style={{ fontWeight: 700 }}>Marca</label>
-                    <select 
-                      className="form-control" 
-                      value={newProdForm.brand} 
+                    <select
+                      className="form-control"
+                      value={newProdForm.brand}
                       onChange={e => setNewProdForm({ ...newProdForm, brand: e.target.value })}
                     >
                       <option value="Sin Marca">Sin Marca</option>
@@ -765,13 +767,13 @@ export function POS() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div className="form-group">
                     <label className="form-label" style={{ fontWeight: 800 }}>Precio de Venta ($) *</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       step="any"
                       min="0"
-                      className="form-control" 
-                      required 
-                      value={newProdForm.sellPrice} 
+                      className="form-control"
+                      required
+                      value={newProdForm.sellPrice}
                       onChange={e => setNewProdForm({ ...newProdForm, sellPrice: e.target.value })}
                       placeholder="Ej. 12500"
                       style={{ fontWeight: 900, fontSize: '1.1rem', color: 'var(--color-primary)' }}
@@ -780,12 +782,12 @@ export function POS() {
 
                   <div className="form-group">
                     <label className="form-label" style={{ color: '#f59e0b', fontWeight: 800 }}>📦 Cantidad Stock *</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       min="0"
-                      className="form-control" 
-                      required 
-                      value={newProdForm.stock} 
+                      className="form-control"
+                      required
+                      value={newProdForm.stock}
                       onChange={e => setNewProdForm({ ...newProdForm, stock: e.target.value })}
                       placeholder="Ej. 1, 5, 10..."
                       style={{ fontWeight: 900, fontSize: '1.1rem', borderColor: '#f59e0b', color: '#fbbf24', background: 'rgba(245, 158, 11, 0.05)' }}
@@ -817,18 +819,18 @@ export function POS() {
                 </div>
 
                 {/* PANEL CÓDIGO DE BARRAS INTUITIVO EN POS */}
-                <div style={{ 
-                  background: 'rgba(15, 23, 42, 0.95)', 
-                  padding: '16px', 
-                  borderRadius: '16px', 
+                <div style={{
+                  background: 'rgba(15, 23, 42, 0.95)',
+                  padding: '16px',
+                  borderRadius: '16px',
                   border: '1px solid rgba(139, 92, 246, 0.3)'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <label className="form-label" style={{ fontWeight: 800, color: '#a78bfa', margin: 0, fontSize: '0.85rem' }}>
                       🏷️ Código de Producto / SKU Intuitivo
                     </label>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn btn-secondary btn-sm"
                       onClick={() => {
                         const auto = generateAutoCode(newProdForm.category || 'General', products, newProdForm.name, newProdForm.variantCode || '01');
@@ -843,10 +845,10 @@ export function POS() {
                   <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: '10px', marginBottom: '8px' }}>
                     <div>
                       <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 700, margin: '0 0 2px 0' }}>Variante</label>
-                      <input 
-                        type="text" 
-                        className="form-control" 
-                        value={newProdForm.variantCode || '01'} 
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newProdForm.variantCode || '01'}
                         onChange={e => {
                           const newVar = e.target.value;
                           const auto = generateAutoCode(newProdForm.category || 'General', products, newProdForm.name, newVar);
@@ -859,10 +861,10 @@ export function POS() {
 
                     <div>
                       <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 700, margin: '0 0 2px 0' }}>Código de Producto (Modificable)</label>
-                      <input 
-                        type="text" 
-                        className="form-control" 
-                        value={newProdForm.barcode} 
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newProdForm.barcode}
                         onChange={e => setNewProdForm({ ...newProdForm, barcode: e.target.value })}
                         placeholder="Ej. MB-01-0001"
                         style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: 800, color: '#fbbf24' }}
@@ -876,11 +878,11 @@ export function POS() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(236, 72, 153, 0.08)', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
-                  <input 
-                    type="checkbox" 
-                    id="autoAdd" 
-                    checked={newProdForm.autoAddToCart} 
-                    onChange={e => setNewProdForm({ ...newProdForm, autoAddToCart: e.target.checked })} 
+                  <input
+                    type="checkbox"
+                    id="autoAdd"
+                    checked={newProdForm.autoAddToCart}
+                    onChange={e => setNewProdForm({ ...newProdForm, autoAddToCart: e.target.checked })}
                     style={{ width: '18px', height: '18px', accentColor: 'var(--color-primary)' }}
                   />
                   <label htmlFor="autoAdd" style={{ fontSize: '0.85rem', fontWeight: 800, color: '#fff', cursor: 'pointer' }}>
